@@ -11,7 +11,12 @@ namespace Tank
     class Terrain
     {
         /// <summary>
-        ///     Texture to apply to the terrain
+        ///     Texture of the heightMap
+        /// </summary>
+        private Texture2D heightMap;
+
+        /// <summary>
+        ///     textures to apply to the map
         /// </summary>
         private Texture2D texture;
 
@@ -26,28 +31,57 @@ namespace Tank
         private int terrainHeight;
 
         /// <summary>
-        ///     Stores the Terrain data
+        ///     Stores the Terrain data from texture
         /// </summary>
         private float[,] terrainData;
+
+        /// <summary>
+        ///     Stores the Terrain Vertices
+        /// </summary>
+        private VertexPositionTexture[] vertices;
+
+        /// <summary>
+        ///     Index to store the vertices
+        /// </summary>
+        private short[] verticesIndex;
+
+        /// <summary>
+        ///     The vertex buffer of the terrain
+        /// </summary>
+        private VertexBuffer vertexBuffer;
+
+        /// <summary>
+        ///     The Index Buffer of the terrain
+        /// </summary>
+        private IndexBuffer indexBuffer;
+
+        /// <summary>
+        /// Effect to apply to the terrain
+        /// </summary>
+        private BasicEffect effect;
 
         /// <summary>
         ///     The Terrain constructor
         /// </summary>
         /// <param name="terrainTexture"></param>
-        public Terrain(Texture2D terrainTexture)
+        public Terrain(Texture2D terrainHeightMap, Texture2D terrainTexture, GraphicsDevice device)
         {
+            heightMap = terrainHeightMap;
             texture = terrainTexture;
 
-            //Checks if the terrain has the right size, if not reduces its size to get even values
-            if (texture.Width % 2 == 0)
-                terrainWidth = texture.Width;
+            //Checks if the terrain has the right size, if not reduces it to get even values
+            if (heightMap.Width % 2 == 0)
+                terrainWidth = heightMap.Width;
             else
-                terrainWidth = texture.Width - 1;
+                terrainWidth = heightMap.Width - 1;
 
-            if (texture.Height % 2 == 0)
-                terrainHeight = texture.Height;
+            if (heightMap.Height % 2 == 0)
+                terrainHeight = heightMap.Height;
             else
-                terrainHeight = texture.Height - 1;
+                terrainHeight = heightMap.Height - 1;
+
+            GetTerrainData();
+            GetVertices(device);
         }
 
         /// <summary>
@@ -56,7 +90,7 @@ namespace Tank
         private void GetTerrainData()
         {
             Color[] greyScale = new Color[terrainWidth * terrainHeight];
-            texture.GetData(greyScale);
+            heightMap.GetData(greyScale);
 
             terrainData = new float[terrainWidth, terrainHeight];
             for (int i = 0; i < terrainWidth; i++)
@@ -68,6 +102,70 @@ namespace Tank
             }
         }
 
+        /// <summary>
+        ///     Setups the vertices with the data from the texture
+        /// </summary>
+        private void GetVertices(GraphicsDevice device)
+        {
+            vertices = new VertexPositionTexture[terrainWidth * terrainHeight];
+            verticesIndex = new short[(terrainWidth * terrainHeight) * 2];
+
+            for (int i = 0; i < terrainWidth; i++)
+            {
+                for (int j = 0; j < terrainHeight; j++)
+                {
+                    vertices[i + j * terrainWidth].Position = new Vector3(i, terrainData[i, j], -j);
+                    vertices[i + j * terrainWidth].TextureCoordinate.X = (float)i / 30.0f;
+                    vertices[i + j * terrainWidth].TextureCoordinate.Y = (float)j / 30.0f;
+                }
+            }
+        
+            // creates an index of vertices
+            for (int i = 0; i < verticesIndex.Length; i += 2)
+            {
+                verticesIndex[i] = (short)(i / 2);
+                verticesIndex[i + 1] = (short)((i / 2) + verticesIndex.Length);
+            }
+
+            vertexBuffer = new VertexBuffer(device, typeof(VertexPositionTexture), vertices.Length, BufferUsage.None);
+            indexBuffer = new IndexBuffer(device, typeof(short), verticesIndex.Length, BufferUsage.None);
+            indexBuffer.SetData<short>(verticesIndex);
+            vertexBuffer.SetData<VertexPositionTexture>(vertices);
+        }
+
+        /// <summary>
+        ///     The basic effect to be applied to the map
+        /// </summary>
+        /// <param name="device"></param>
+        public void TerrainEffect(GraphicsDevice device)
+        {
+            effect = new BasicEffect(device);
+
+            float aspectRatio = (float)device.Viewport.Width / device.Viewport.Height;
+            effect.View = Matrix.CreateLookAt(new Vector3(0f, 4f, 0f), Vector3.Zero, Vector3.Up);
+            effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45.0f), aspectRatio, 1.0f, 10.0f);
+
+            effect.LightingEnabled = false;
+            effect.TextureEnabled = true;
+            effect.Texture = texture;
+
+            device.Indices = indexBuffer;
+            device.SetVertexBuffer(vertexBuffer);
+        }
+
+        /// <summary>
+        /// Draws the map
+        /// </summary>
+        /// <param name="device"></param>
+        public void Draw(GraphicsDevice device)
+        {
+            effect.World = Matrix.Identity;
+            effect.CurrentTechnique.Passes[0].Apply();
+            for (int i = 0; i < ((terrainWidth * terrainHeight-1) * 2); i += (terrainWidth * 2))
+            {
+                device.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, (terrainWidth * 2), i, (terrainWidth * 2) - 2);
+            }
+        }
 
     }
 }

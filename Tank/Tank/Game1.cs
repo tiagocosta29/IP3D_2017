@@ -9,8 +9,21 @@ namespace Tank
     /// </summary>
     public class Game1 : Game
     {
-        GraphicsDeviceManager graphics;
-        SpriteBatch spriteBatch;
+        /// <summary>
+        /// The Graphics Device Manager
+        /// </summary>
+        private GraphicsDeviceManager graphics;
+
+        /// <summary>
+        /// The sprite Batch
+        /// </summary>
+        private SpriteBatch spriteBatch;
+
+        /// <summary>
+        /// The Terrain class
+        /// </summary>
+        private Terrain terrain;
+
 
         public Game1()
         {
@@ -28,6 +41,16 @@ namespace Tank
         {
             // TODO: Add your initialization logic here
 
+            System.IO.FileStream stream = new System.IO.FileStream(@"Content\heightMap.jpg", System.IO.FileMode.Open);
+            var heightMap = Texture2D.FromStream(GraphicsDevice, stream);
+            stream.Dispose();
+            
+            stream = new System.IO.FileStream(@"Content\terrainTexture.jpg", System.IO.FileMode.Open);
+            var texture = Texture2D.FromStream(GraphicsDevice, stream);
+            stream.Dispose();
+
+            terrain = new Terrain(heightMap, texture, GraphicsDevice);
+
             base.Initialize();
         }
 
@@ -40,7 +63,9 @@ namespace Tank
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
+            //Applies the effect to the terrain
+            terrain.TerrainEffect(GraphicsDevice);
+            
         }
 
         /// <summary>
@@ -73,8 +98,9 @@ namespace Tank
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.Black);
 
+            terrain.Draw(GraphicsDevice);
             // TODO: Add your drawing code here
 
             base.Draw(gameTime);
