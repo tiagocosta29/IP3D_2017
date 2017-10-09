@@ -124,7 +124,7 @@ namespace Tank
             for (int i = 0; i < verticesIndex.Length; i += 2)
             {
                 verticesIndex[i] = (short)(i / 2);
-                verticesIndex[i + 1] = (short)((i / 2) + verticesIndex.Length);
+                verticesIndex[i + 1] = (short)((i / 2) + terrainHeight);
             }
 
             vertexBuffer = new VertexBuffer(device, typeof(VertexPositionTexture), vertices.Length, BufferUsage.None);
