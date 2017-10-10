@@ -10,24 +10,30 @@ namespace Tank
     public class Game1 : Game
     {
         /// <summary>
-        /// The Graphics Device Manager
+        ///     The Graphics Device Manager
         /// </summary>
         private GraphicsDeviceManager graphics;
 
         /// <summary>
-        /// The sprite Batch
+        ///     The sprite Batch
         /// </summary>
         private SpriteBatch spriteBatch;
 
         /// <summary>
-        /// The Terrain class
+        ///     The Terrain class
         /// </summary>
         private Terrain terrain;
 
+        /// <summary>
+        ///     The Camera Class
+        /// </summary>
+        private Camera camera;
 
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
+            graphics.IsFullScreen = true;
+
             Content.RootDirectory = "Content";
         }
 
@@ -40,17 +46,8 @@ namespace Tank
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-
-            System.IO.FileStream stream = new System.IO.FileStream(@"Content\heightMap.jpg", System.IO.FileMode.Open);
-            var heightMap = Texture2D.FromStream(GraphicsDevice, stream);
-            stream.Dispose();
+            camera = new Camera(GraphicsDevice);
             
-            stream = new System.IO.FileStream(@"Content\terrainTexture.jpg", System.IO.FileMode.Open);
-            var texture = Texture2D.FromStream(GraphicsDevice, stream);
-            stream.Dispose();
-
-            terrain = new Terrain(heightMap, texture, GraphicsDevice);
-
             base.Initialize();
         }
 
@@ -63,9 +60,15 @@ namespace Tank
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            //Applies the effect to the terrain
-            terrain.TerrainEffect(GraphicsDevice);
-            
+            System.IO.FileStream stream = new System.IO.FileStream(@"Content\heightMap.jpg", System.IO.FileMode.Open);
+            var heightMap = Texture2D.FromStream(GraphicsDevice, stream);
+            stream.Dispose();
+
+            stream = new System.IO.FileStream(@"Content\terrainTexture.jpg", System.IO.FileMode.Open);
+            var texture = Texture2D.FromStream(GraphicsDevice, stream);
+            stream.Dispose();
+
+            terrain = new Terrain(heightMap, texture, GraphicsDevice);
         }
 
         /// <summary>
@@ -87,6 +90,9 @@ namespace Tank
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
+            //Updates the camera
+            camera.Update(gameTime);
+
             // TODO: Add your update logic here
 
             base.Update(gameTime);
@@ -100,7 +106,7 @@ namespace Tank
         {
             GraphicsDevice.Clear(Color.Black);
 
-            terrain.Draw(GraphicsDevice);
+            terrain.Draw(GraphicsDevice, camera);
             // TODO: Add your drawing code here
 
             base.Draw(gameTime);

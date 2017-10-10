@@ -10,6 +10,7 @@ namespace Tank
 {
     class Terrain
     {
+#region Variables
         /// <summary>
         ///     Texture of the heightMap
         /// </summary>
@@ -60,6 +61,8 @@ namespace Tank
         /// </summary>
         private BasicEffect effect;
 
+#endregion
+
         /// <summary>
         ///     The Terrain constructor
         /// </summary>
@@ -82,6 +85,12 @@ namespace Tank
 
             GetTerrainData();
             GetVertices(device);
+
+            // Setups the effect to be applied to the terrain
+            effect = new BasicEffect(device);
+            effect.LightingEnabled = false;
+            effect.TextureEnabled = true;
+            effect.Texture = texture;
         }
 
         /// <summary>
@@ -128,35 +137,26 @@ namespace Tank
             }
 
             vertexBuffer = new VertexBuffer(device, typeof(VertexPositionTexture), vertices.Length, BufferUsage.None);
+            vertexBuffer.SetData<VertexPositionTexture>(vertices);
+
             indexBuffer = new IndexBuffer(device, typeof(short), verticesIndex.Length, BufferUsage.None);
             indexBuffer.SetData<short>(verticesIndex);
-            vertexBuffer.SetData<VertexPositionTexture>(vertices);
-        }
 
-        /// <summary>
-        ///     The basic effect to be applied to the map
-        /// </summary>
-        /// <param name="device"></param>
-        public void TerrainEffect(GraphicsDevice device)
-        {
-            effect = new BasicEffect(device);
-            
-            effect.View = Matrix.CreateLookAt(new Vector3(60, 80, -80), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
-            effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, device.Viewport.AspectRatio, 1.0f, 300.0f);
-            effect.LightingEnabled = false;
-            effect.TextureEnabled = true;
-            effect.Texture = texture;
-            
             device.Indices = indexBuffer;
             device.SetVertexBuffer(vertexBuffer);
         }
-
+        
         /// <summary>
         /// Draws the map
         /// </summary>
         /// <param name="device"></param>
-        public void Draw(GraphicsDevice device)
+        public void Draw(GraphicsDevice device, Camera camera)
         {
+            //effect.View = Matrix.CreateLookAt(new Vector3(60, 80, -80), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
+            //effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, device.Viewport.AspectRatio, 1.0f, 300.0f);
+            effect.View = camera.ViewMatrix;
+            effect.Projection = camera.ProjectionMatrix;
+
             effect.World = Matrix.CreateTranslation(-terrainWidth / 2.0f, 0, terrainHeight / 2.0f);
             effect.CurrentTechnique.Passes[0].Apply();
             RasterizerState rs = new RasterizerState();

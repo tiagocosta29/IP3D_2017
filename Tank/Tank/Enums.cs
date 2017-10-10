@@ -6,6 +6,9 @@ using System.Threading.Tasks;
 
 namespace Tank
 {
+    /// <summary>
+    ///     Enum for the GameCamera
+    /// </summary>
     public enum GameCamera
     {
         FreeRoam = 0,
