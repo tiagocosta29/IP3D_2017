@@ -97,7 +97,7 @@ namespace Tank
             {
                 for (int j = 0; j < terrainHeight; j++)
                 {
-                    terrainData[i, j] = greyScale[i + j * terrainWidth].R / 5.0f;
+                    terrainData[i, j] = greyScale[i + j * terrainWidth].R / 20.0f;
                 }
             }
         }
@@ -115,11 +115,11 @@ namespace Tank
                 for (int j = 0; j < terrainHeight; j++)
                 {
                     vertices[i + j * terrainWidth].Position = new Vector3(i, terrainData[i, j], -j);
-                    vertices[i + j * terrainWidth].TextureCoordinate.X = (float)i / 30.0f;
-                    vertices[i + j * terrainWidth].TextureCoordinate.Y = (float)j / 30.0f;
+                    vertices[i + j * terrainWidth].TextureCoordinate.X = (float)i / 8.0f;
+                    vertices[i + j * terrainWidth].TextureCoordinate.Y = (float)j / 8.0f;
                 }
             }
-        
+
             // creates an index of vertices
             for (int i = 0; i < verticesIndex.Length; i += 2)
             {
@@ -140,15 +140,13 @@ namespace Tank
         public void TerrainEffect(GraphicsDevice device)
         {
             effect = new BasicEffect(device);
-
-            float aspectRatio = (float)device.Viewport.Width / device.Viewport.Height;
-            effect.View = Matrix.CreateLookAt(new Vector3(0f, 4f, 0f), Vector3.Zero, Vector3.Up);
-            effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.ToRadians(45.0f), aspectRatio, 1.0f, 10.0f);
-
+            
+            effect.View = Matrix.CreateLookAt(new Vector3(60, 80, -80), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
+            effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, device.Viewport.AspectRatio, 1.0f, 300.0f);
             effect.LightingEnabled = false;
             effect.TextureEnabled = true;
             effect.Texture = texture;
-
+            
             device.Indices = indexBuffer;
             device.SetVertexBuffer(vertexBuffer);
         }
@@ -159,9 +157,13 @@ namespace Tank
         /// <param name="device"></param>
         public void Draw(GraphicsDevice device)
         {
-            effect.World = Matrix.Identity;
+            effect.World = Matrix.CreateTranslation(-terrainWidth / 2.0f, 0, terrainHeight / 2.0f);
             effect.CurrentTechnique.Passes[0].Apply();
-            for (int i = 0; i < ((terrainWidth * terrainHeight-1) * 2); i += (terrainWidth * 2))
+            RasterizerState rs = new RasterizerState();
+            rs.CullMode = CullMode.None;
+            device.RasterizerState = rs;
+
+            for (int i = 0; i < ((terrainWidth * terrainHeight - 1) * 2); i += (terrainWidth * 2))
             {
                 device.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, (terrainWidth * 2), i, (terrainWidth * 2) - 2);
             }
