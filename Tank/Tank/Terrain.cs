@@ -39,7 +39,7 @@ namespace Tank
         /// <summary>
         ///     Stores the Terrain Vertices
         /// </summary>
-        private VertexPositionTexture[] vertices;
+        public VertexPositionTexture[] Vertices;
 
         /// <summary>
         ///     Index to store the vertices
@@ -106,7 +106,7 @@ namespace Tank
             {
                 for (int j = 0; j < terrainHeight; j++)
                 {
-                    terrainData[i, j] = greyScale[i + j * terrainWidth].R / 20.0f;
+                    terrainData[i, j] = greyScale[i + j * terrainWidth].R / 30.0f;
                 }
             }
         }
@@ -116,16 +116,16 @@ namespace Tank
         /// </summary>
         private void GetVertices(GraphicsDevice device)
         {
-            vertices = new VertexPositionTexture[terrainWidth * terrainHeight];
+            Vertices = new VertexPositionTexture[terrainWidth * terrainHeight];
             verticesIndex = new short[(terrainWidth * terrainHeight) * 2];
 
             for (int i = 0; i < terrainWidth; i++)
             {
                 for (int j = 0; j < terrainHeight; j++)
                 {
-                    vertices[i + j * terrainWidth].Position = new Vector3(i, terrainData[i, j], -j);
-                    vertices[i + j * terrainWidth].TextureCoordinate.X = (float)i / 8.0f;
-                    vertices[i + j * terrainWidth].TextureCoordinate.Y = (float)j / 8.0f;
+                    Vertices[i + j * terrainWidth].Position = new Vector3(i, terrainData[i, j], -j);
+                    Vertices[i + j * terrainWidth].TextureCoordinate.X = (float)i / 8.0f;
+                    Vertices[i + j * terrainWidth].TextureCoordinate.Y = (float)j / 8.0f;
                 }
             }
 
@@ -136,8 +136,8 @@ namespace Tank
                 verticesIndex[i + 1] = (short)((i / 2) + terrainHeight);
             }
 
-            vertexBuffer = new VertexBuffer(device, typeof(VertexPositionTexture), vertices.Length, BufferUsage.None);
-            vertexBuffer.SetData<VertexPositionTexture>(vertices);
+            vertexBuffer = new VertexBuffer(device, typeof(VertexPositionTexture), Vertices.Length, BufferUsage.None);
+            vertexBuffer.SetData<VertexPositionTexture>(Vertices);
 
             indexBuffer = new IndexBuffer(device, typeof(short), verticesIndex.Length, BufferUsage.None);
             indexBuffer.SetData<short>(verticesIndex);

@@ -32,7 +32,7 @@ namespace Tank
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
-            graphics.IsFullScreen = true;
+            //graphics.IsFullScreen = true;
 
             Content.RootDirectory = "Content";
         }
@@ -46,7 +46,6 @@ namespace Tank
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
-            camera = new Camera(GraphicsDevice);
             
             base.Initialize();
         }
@@ -69,6 +68,8 @@ namespace Tank
             stream.Dispose();
 
             terrain = new Terrain(heightMap, texture, GraphicsDevice);
+
+            camera = new Camera(GraphicsDevice, terrain.Vertices);
         }
 
         /// <summary>

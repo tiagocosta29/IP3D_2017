@@ -14,6 +14,11 @@ namespace Tank
         /// <summary>
         /// Variable that holds the current camera in use
         /// </summary>
-        public static GameCamera CameraSetting = GameCamera.FreeRoam;
+        public static GameCamera CameraSetting = GameCamera.SurfaceFollow;
+
+        /// <summary>
+        /// Speed to move the camera
+        /// </summary>
+        public static float CameraSpeed = 50f;
     }
 }
