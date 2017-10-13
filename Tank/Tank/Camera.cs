@@ -34,29 +34,42 @@ namespace Tank
         /// <summary>
         ///     Angle to apply rotation to the camera
         /// </summary>
-        private float cameraAngle;
+        private float cameraAngleX;
+
+        /// <summary>
+        ///     Angle to apply rotation to the camera
+        /// </summary>
+        private float cameraAngleY;
 
         /// <summary>
         ///     Look at vector to aplly to the camera
         /// </summary>
         private Vector3 cameraLookAt;
-
-        /// <summary>
-        ///     Rotation Matrix to apply to the camera
-        /// </summary>
-        private Matrix cameraRotationMatrix;
-
+        
         /// <summary>
         ///     Vertices to calculate surface follow
         /// </summary>
         private VertexPositionTexture[] terrainVertices;
 
         /// <summary>
+        ///     Stores the heightmap texture Width
+        /// </summary>
+        private int terrainWidth;
+
+        /// <summary>
+        ///     Stores the heightmap texture Height
+        /// </summary>
+        private int terrainHeight;
+
+        /// <summary>
         ///     Camera Constructor
         /// </summary>
         /// <param name="device"></param>
-        public Camera(GraphicsDevice device, VertexPositionTexture[] vertices)
+        public Camera(GraphicsDevice device, VertexPositionTexture[] vertices, int tWidth, int tHeight)
         {
+            terrainWidth = tWidth;
+            terrainHeight = tHeight;
+
             terrainVertices = vertices;
             graphicsDevice = device;
             InitCamera();
@@ -67,14 +80,15 @@ namespace Tank
         /// </summary>
         private void InitCamera()
         {
-            switch(GameConfig.CameraSetting)
+            switch (GameConfig.CameraSetting)
             {
                 case GameCamera.FreeRoam:
+                case GameCamera.SurfaceFollow:
                     FreeRoamCameraSettings();
                     break;
 
                 default:
-                    break;
+                    throw new NotImplementedException(string.Format("Camera {0} not defined", GameConfig.CameraSetting));
             }
         }
 
@@ -84,20 +98,23 @@ namespace Tank
         /// <param name="gameTime"></param>
         public void Update(GameTime gameTime)
         {
+            var kb = Keyboard.GetState();
+
+            if (kb.IsKeyDown(Keys.F1))
+                GameConfig.CameraSetting = GameCamera.FreeRoam;
+            if (kb.IsKeyDown(Keys.F2))
+                GameConfig.CameraSetting = GameCamera.SurfaceFollow;
+
             switch (GameConfig.CameraSetting)
             {
                 case GameCamera.FreeRoam:
-                    FreeRoamUpdate(gameTime);
-                    break;
-
                 case GameCamera.SurfaceFollow:
-                    SurfaceFollowCameraUpdate();
+                    FreeRoamUpdate(gameTime);
                     break;
 
                 default:
                     throw new NotImplementedException(string.Format("Camera {0} not defined", GameConfig.CameraSetting));
             }
-
         }
 
         /// <summary>
@@ -105,11 +122,12 @@ namespace Tank
         /// </summary>
         private void FreeRoamCameraSettings()
         {
-            //cameraPosition = new Vector3(60, 80, -80);
-            cameraPosition = new Vector3(1,1,1);
-            cameraLookAt = new Vector3(0f, 0f, 0f);
-            ViewMatrix = Matrix.CreateLookAt(cameraPosition, cameraLookAt, new Vector3(0, 1, 0));
-            ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, graphicsDevice.Viewport.AspectRatio, 1.0f, 300.0f);
+            cameraPosition = new Vector3(64f, 25f, 64f);
+            
+            cameraLookAt = new Vector3(0f, 0f, -1f) - cameraPosition;
+            cameraLookAt.Normalize();
+            ViewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraLookAt, Vector3.Up);
+            ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, graphicsDevice.Viewport.AspectRatio, 1f, 10000f);
         }
 
         /// <summary>
@@ -119,69 +137,109 @@ namespace Tank
         {
             // Gets the keyboard state
             var kb = Keyboard.GetState();
+
             if (kb.IsKeyDown(Keys.Up))
-            {
-                var forwardVector = new Vector3(0f, 0f, 1f);
-                var rotationMatrix = Matrix.CreateRotationZ(cameraAngle);
-                forwardVector = Vector3.Transform(forwardVector, rotationMatrix);
-                cameraPosition += forwardVector * GameConfig.CameraSpeed *
-                (float)gameTime.ElapsedGameTime.TotalSeconds;
-                CameraUpdate();
-            }
+                cameraPosition += cameraLookAt * GameConfig.CameraSpeed;
             else if (kb.IsKeyDown(Keys.Down))
-            {
-                var forwardVector = new Vector3(0f, 0f, -1f);
-                var rotationMatrix = Matrix.CreateRotationZ(cameraAngle);
-                forwardVector = Vector3.Transform(forwardVector, rotationMatrix);
-                cameraPosition += forwardVector * GameConfig.CameraSpeed *
-                (float)gameTime.ElapsedGameTime.TotalSeconds;
-                CameraUpdate();
-            }
-            else if (kb.IsKeyDown(Keys.Right))
-            {
-                cameraAngle += (float)gameTime.ElapsedGameTime.TotalSeconds;
-                CameraUpdate();
-            }
+                cameraPosition -= cameraLookAt * GameConfig.CameraSpeed;
+
+            if (kb.IsKeyDown(Keys.Right))
+                cameraPosition -= Vector3.Cross(Vector3.Up, cameraLookAt) * GameConfig.CameraSpeed; 
             else if (kb.IsKeyDown(Keys.Left))
+                cameraPosition += Vector3.Cross(Vector3.Up, cameraLookAt) * GameConfig.CameraSpeed;
+            
+
+            if (kb.IsKeyDown(Keys.D))
+                cameraAngleX += (float)gameTime.ElapsedGameTime.TotalSeconds;
+            else if (kb.IsKeyDown(Keys.A))
+                cameraAngleX -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+            else
+                cameraAngleX = 0;
+
+            if (GameConfig.CameraSetting != GameCamera.SurfaceFollow)
             {
-                cameraAngle -= (float)gameTime.ElapsedGameTime.TotalSeconds;
-                CameraUpdate();
+                if (kb.IsKeyDown(Keys.S))
+                    cameraAngleY += (float)gameTime.ElapsedGameTime.TotalSeconds;
+                else if (kb.IsKeyDown(Keys.W))
+                    cameraAngleY -= (float)gameTime.ElapsedGameTime.TotalSeconds;
+                else
+                    cameraAngleY = 0;
             }
+
+            if (GameConfig.CameraSetting == GameCamera.SurfaceFollow)
+                cameraPosition.Y = SurfaceFollow() + 5f;
+
+            // Rotaes the camera
+            cameraLookAt = Vector3.Transform(cameraLookAt, Matrix.CreateFromAxisAngle(Vector3.Cross(Vector3.Up, cameraLookAt), (MathHelper.PiOver4 / 150) * (cameraAngleY))); 
+            cameraLookAt = Vector3.Transform(cameraLookAt, Matrix.CreateFromAxisAngle(Vector3.Up, (-MathHelper.PiOver4 / 10f) * (cameraAngleX)));
+            ViewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraLookAt, Vector3.Up);
         }
 
         /// <summary>
-        ///     The surface follow camera
+        ///     returns the height value to apply to the camera to build a surface follow
         /// </summary>
-        private float SurfaceFollowCameraUpdate()
+        private float SurfaceFollow()
         {
-            float distance = 0f;
-            float newDistance = float.MaxValue;
-            float newCameraPositionY = 0f;
+            #region variables
+            float x1 = 0f;
+            float x2 = 0f;
+            float z1 = 0f;
+            float z2 = 0f;
 
-            for (int i = 0; i < terrainVertices.Length; i+=4)
+            float y1;
+            float y2;
+
+            Vector3 topLeft = Vector3.Zero;
+            Vector3 topRight = Vector3.Zero;
+            Vector3 downRight = Vector3.Zero;
+            Vector3 downLeft = Vector3.Zero;
+#endregion
+            // Searchs for the nearby coordinates
+            for (int i = 0; i < terrainWidth; i++)
             {
-                var tempVector = new Vector3(terrainVertices[i].Position.X, cameraPosition.Y, terrainVertices[i].Position.Z);
-                Vector3.Distance(ref cameraPosition, ref tempVector, out distance);
-                if (distance < newDistance)
+                if (cameraPosition.X >= i && cameraPosition.X <= (i + 1))
                 {
-                    newDistance = distance;
-                    newCameraPositionY = terrainVertices[i].Position.Y;
+                    x1 = i;
+                    x2 = (i + 1);
+                    break;
                 }
             }
 
-            return newCameraPositionY + 5f;
-        }
-        
-        /// <summary>
-        /// Updates the camera 
-        /// </summary>
-        private void CameraUpdate()
-        {
-            cameraRotationMatrix = Matrix.CreateRotationY(cameraAngle);
-            cameraLookAt = Vector3.Transform(cameraLookAt, cameraRotationMatrix);
-            cameraLookAt += cameraPosition;
-            ViewMatrix = Matrix.CreateLookAt(cameraPosition, cameraLookAt, new Vector3(0, 1, 0));
-        }
+            for (int i = 0; i < terrainHeight; i++) 
+            {
+                if (cameraPosition.Z >= i && cameraPosition.Z <= (i + 1))
+                {
+                    z1 = i;
+                    z2 = (i + 1);
+                    break;
+                }
+            }
 
+            //Searchs for the vertices on the previous stores coodinates, and then stores it's positon into vectors
+            foreach (VertexPositionTexture item in terrainVertices)
+            {
+                if (item.Position.X == x1 && item.Position.Z == z1)
+                    topLeft = item.Position;
+                else if (item.Position.X == x1 && item.Position.Z == z2)
+                    downLeft = item.Position;
+                else if (item.Position.X == x2 && item.Position.Z == z1)
+                    topRight = item.Position;
+                else if (item.Position.X == x2 && item.Position.Z == z2)
+                    downRight = item.Position;
+            }
+
+            //Console.WriteLine("CAMERA POSITION " + cameraPosition.X + " -- " + cameraPosition.Y + " -- " + cameraPosition.Z + " -- ");
+
+            // This is using bilinear interpolation to calculate the value of the height 
+            // https://en.wikipedia.org/wiki/Bilinear_interpolation
+            y1 = (((cameraPosition.X - topLeft.X) * (topRight.Y - topLeft.Y)) /
+                 (topRight.X - topLeft.X) + topLeft.Y);
+
+            y2 = (((cameraPosition.X - downLeft.X) * (downRight.Y - downLeft.Y)) /
+                  (downRight.X - downLeft.X) + downLeft.Y);
+
+            return (((cameraPosition.Z - topRight.Z) * (y2 - y1)) /
+                    (downRight.Z - topRight.Z) + y1);            
+        }
     }
 }

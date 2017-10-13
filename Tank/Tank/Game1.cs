@@ -69,7 +69,7 @@ namespace Tank
 
             terrain = new Terrain(heightMap, texture, GraphicsDevice);
 
-            camera = new Camera(GraphicsDevice, terrain.Vertices);
+            camera = new Camera(GraphicsDevice, terrain.Vertices, terrain.TerrainWidth, terrain.TerrainHeight);
         }
 
         /// <summary>

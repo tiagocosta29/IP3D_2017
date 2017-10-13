@@ -24,12 +24,12 @@ namespace Tank
         /// <summary>
         ///     The widht of the terrain texture
         /// </summary>
-        private int terrainWidth;
+        public int TerrainWidth;
 
         /// <summary>
         ///     The height of the terrain texture
         /// </summary>
-        private int terrainHeight;
+        public int TerrainHeight;
 
         /// <summary>
         ///     Stores the Terrain data from texture
@@ -74,14 +74,14 @@ namespace Tank
 
             //Checks if the terrain has the right size, if not reduces it to get even values
             if (heightMap.Width % 2 == 0)
-                terrainWidth = heightMap.Width;
+                TerrainWidth = heightMap.Width;
             else
-                terrainWidth = heightMap.Width - 1;
+                TerrainWidth = heightMap.Width - 1;
 
             if (heightMap.Height % 2 == 0)
-                terrainHeight = heightMap.Height;
+                TerrainHeight = heightMap.Height;
             else
-                terrainHeight = heightMap.Height - 1;
+                TerrainHeight = heightMap.Height - 1;
 
             GetTerrainData();
             GetVertices(device);
@@ -98,15 +98,15 @@ namespace Tank
         /// </summary>
         private void GetTerrainData()
         {
-            Color[] greyScale = new Color[terrainWidth * terrainHeight];
+            Color[] greyScale = new Color[TerrainWidth * TerrainHeight];
             heightMap.GetData(greyScale);
 
-            terrainData = new float[terrainWidth, terrainHeight];
-            for (int i = 0; i < terrainWidth; i++)
+            terrainData = new float[TerrainWidth, TerrainHeight];
+            for (int i = 0; i < TerrainWidth; i++)
             {
-                for (int j = 0; j < terrainHeight; j++)
+                for (int j = 0; j < TerrainHeight; j++)
                 {
-                    terrainData[i, j] = greyScale[i + j * terrainWidth].R / 30.0f;
+                    terrainData[i, j] = greyScale[i + j * TerrainWidth].R / 30.0f;
                 }
             }
         }
@@ -116,16 +116,16 @@ namespace Tank
         /// </summary>
         private void GetVertices(GraphicsDevice device)
         {
-            Vertices = new VertexPositionTexture[terrainWidth * terrainHeight];
-            verticesIndex = new short[(terrainWidth * terrainHeight) * 2];
+            Vertices = new VertexPositionTexture[TerrainWidth * TerrainHeight];
+            verticesIndex = new short[(TerrainWidth * TerrainHeight) * 2];
 
-            for (int i = 0; i < terrainWidth; i++)
+            for (int i = 0; i < TerrainWidth; i++)
             {
-                for (int j = 0; j < terrainHeight; j++)
+                for (int j = 0; j < TerrainHeight; j++)
                 {
-                    Vertices[i + j * terrainWidth].Position = new Vector3(i, terrainData[i, j], -j);
-                    Vertices[i + j * terrainWidth].TextureCoordinate.X = (float)i / 8.0f;
-                    Vertices[i + j * terrainWidth].TextureCoordinate.Y = (float)j / 8.0f;
+                    Vertices[i + j * TerrainWidth].Position = new Vector3(i, terrainData[i, j], j);
+                    Vertices[i + j * TerrainWidth].TextureCoordinate.X = (float)i / 8.0f;
+                    Vertices[i + j * TerrainWidth].TextureCoordinate.Y = (float)j / 8.0f;
                 }
             }
 
@@ -133,7 +133,7 @@ namespace Tank
             for (int i = 0; i < verticesIndex.Length; i += 2)
             {
                 verticesIndex[i] = (short)(i / 2);
-                verticesIndex[i + 1] = (short)((i / 2) + terrainHeight);
+                verticesIndex[i + 1] = (short)((i / 2) + TerrainHeight);
             }
 
             vertexBuffer = new VertexBuffer(device, typeof(VertexPositionTexture), Vertices.Length, BufferUsage.None);
@@ -157,15 +157,15 @@ namespace Tank
             effect.View = camera.ViewMatrix;
             effect.Projection = camera.ProjectionMatrix;
 
-            effect.World = Matrix.CreateTranslation(-terrainWidth / 2.0f, 0, terrainHeight / 2.0f);
+            effect.World = Matrix.Identity;
             effect.CurrentTechnique.Passes[0].Apply();
             RasterizerState rs = new RasterizerState();
             rs.CullMode = CullMode.None;
             device.RasterizerState = rs;
-
-            for (int i = 0; i < ((terrainWidth * terrainHeight - 1) * 2); i += (terrainWidth * 2))
+            
+            for (int i = 0; i < (TerrainWidth * (TerrainHeight - 1) * 2); i += (TerrainWidth * 2))
             {
-                device.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, (terrainWidth * 2), i, (terrainWidth * 2) - 2);
+                device.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, (TerrainWidth * 2), i, (TerrainWidth * 2) - 2);
             }
         }
 

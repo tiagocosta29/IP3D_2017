@@ -19,6 +19,6 @@ namespace Tank
         /// <summary>
         /// Speed to move the camera
         /// </summary>
-        public static float CameraSpeed = 50f;
+        public static float CameraSpeed = 0.5f;
     }
 }
