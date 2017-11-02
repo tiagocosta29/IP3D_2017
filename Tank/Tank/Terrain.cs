@@ -39,7 +39,7 @@ namespace Tank
         /// <summary>
         ///     Stores the Terrain Vertices
         /// </summary>
-        public VertexPositionTexture[] Vertices;
+        public VertexPositionNormalTexture[] Vertices;
 
         /// <summary>
         ///     Index to store the vertices
@@ -85,10 +85,31 @@ namespace Tank
 
             GetTerrainData();
             GetVertices(device);
+            TerrainEffect(device);
+        }
 
-            // Setups the effect to be applied to the terrain
+        /// <summary>
+        /// Setups the effect to be applied to the terrain
+        /// </summary>
+        /// <param name="device"></param>
+        private void TerrainEffect(GraphicsDevice device)
+        {
             effect = new BasicEffect(device);
-            effect.LightingEnabled = false;
+            effect.LightingEnabled = true;
+            effect.DirectionalLight0.Enabled = true;
+            effect.DirectionalLight0.Direction = new Vector3(1.0f, -1.0f, 1.0f);
+            effect.DirectionalLight0.SpecularColor = Helper.ColorToVector(Color.BlueViolet);
+            effect.DirectionalLight0.DiffuseColor = Helper.ColorToVector(Color.BlueViolet);
+            effect.AmbientLightColor = Helper.ColorToVector(Color.White);
+            effect.SpecularPower = 1000f;
+            effect.SpecularColor = Helper.ColorToVector(Color.White);
+            effect.DirectionalLight1.Enabled = true;
+            effect.DirectionalLight2.Enabled = true;
+
+            effect.FogEnabled = true;
+            effect.FogColor = Helper.ColorToVector(Color.Black);
+            effect.FogStart = 15f;
+            effect.FogEnd = 60f;
             effect.TextureEnabled = true;
             effect.Texture = texture;
         }
@@ -106,7 +127,7 @@ namespace Tank
             {
                 for (int j = 0; j < TerrainHeight; j++)
                 {
-                    terrainData[i, j] = greyScale[i + j * TerrainWidth].R / 30.0f;
+                    terrainData[i, j] = greyScale[i + j * TerrainWidth].R / 15.0f;
                 }
             }
         }
@@ -116,7 +137,7 @@ namespace Tank
         /// </summary>
         private void GetVertices(GraphicsDevice device)
         {
-            Vertices = new VertexPositionTexture[TerrainWidth * TerrainHeight];
+            Vertices = new VertexPositionNormalTexture[TerrainWidth * TerrainHeight];
             verticesIndex = new short[(TerrainWidth * TerrainHeight) * 2];
 
             for (int i = 0; i < TerrainWidth; i++)
@@ -124,8 +145,9 @@ namespace Tank
                 for (int j = 0; j < TerrainHeight; j++)
                 {
                     Vertices[i + j * TerrainWidth].Position = new Vector3(i, terrainData[i, j], j);
-                    Vertices[i + j * TerrainWidth].TextureCoordinate.X = (float)i / 8.0f;
-                    Vertices[i + j * TerrainWidth].TextureCoordinate.Y = (float)j / 8.0f;
+                    Vertices[i + j * TerrainWidth].Normal = new Vector3(0f, 0f, 0f);
+                    Vertices[i + j * TerrainWidth].TextureCoordinate.X = (float)i / 4.0f;
+                    Vertices[i + j * TerrainWidth].TextureCoordinate.Y = (float)j / 4.0f;
                 }
             }
 
@@ -136,14 +158,54 @@ namespace Tank
                 verticesIndex[i + 1] = (short)((i / 2) + TerrainHeight);
             }
 
-            vertexBuffer = new VertexBuffer(device, typeof(VertexPositionTexture), Vertices.Length, BufferUsage.None);
-            vertexBuffer.SetData<VertexPositionTexture>(Vertices);
+            GetNormals();
+
+            vertexBuffer = new VertexBuffer(device, typeof(VertexPositionNormalTexture), Vertices.Length, BufferUsage.None);
+            vertexBuffer.SetData<VertexPositionNormalTexture>(Vertices);
 
             indexBuffer = new IndexBuffer(device, typeof(short), verticesIndex.Length, BufferUsage.None);
             indexBuffer.SetData<short>(verticesIndex);
 
             device.Indices = indexBuffer;
             device.SetVertexBuffer(vertexBuffer);
+        }
+
+        /// <summary>
+        /// Sets up the normals for the terrain vertices
+        /// </summary>
+        private void GetNormals()
+        {
+            int index1 = 0;
+            int index2 = 0;
+            int index3 = 0;
+
+            Vector3 side1 = Vector3.Zero;
+            Vector3 side2 = Vector3.Zero;
+            Vector3 normal = Vector3.Zero;
+
+            for (int i = 0; i < Vertices.Length; i++)
+            {
+                if (verticesIndex[i * 3] < Vertices.Length &&
+                    verticesIndex[i * 3 + 1] < Vertices.Length &&
+                    verticesIndex[i * 3 + 2] < Vertices.Length)
+                {
+                    index1 = verticesIndex[i * 3];
+                    index2 = verticesIndex[i * 3 + 1];
+                    index3 = verticesIndex[i * 3 + 2];
+                }
+                else
+                    break;
+
+                side1 = Vertices[index2].Position - Vertices[index1].Position;
+                side2 = Vertices[index1].Position - Vertices[index3].Position;
+
+                normal = Vector3.Cross(side1, side2);
+                normal.Normalize();
+
+                Vertices[index1].Normal = normal;                
+                Vertices[index2].Normal = -normal;
+                Vertices[index3].Normal = normal;
+            }
         }
         
         /// <summary>
@@ -152,8 +214,6 @@ namespace Tank
         /// <param name="device"></param>
         public void Draw(GraphicsDevice device, Camera camera)
         {
-            //effect.View = Matrix.CreateLookAt(new Vector3(60, 80, -80), new Vector3(0, 0, 0), new Vector3(0, 1, 0));
-            //effect.Projection = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, device.Viewport.AspectRatio, 1.0f, 300.0f);
             effect.View = camera.ViewMatrix;
             effect.Projection = camera.ProjectionMatrix;
 

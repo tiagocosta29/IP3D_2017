@@ -49,7 +49,7 @@ namespace Tank
         /// <summary>
         ///     Vertices to calculate surface follow
         /// </summary>
-        private VertexPositionTexture[] terrainVertices;
+        private VertexPositionNormalTexture[] terrainVertices;
 
         /// <summary>
         ///     Stores the heightmap texture Width
@@ -65,7 +65,7 @@ namespace Tank
         ///     Camera Constructor
         /// </summary>
         /// <param name="device"></param>
-        public Camera(GraphicsDevice device, VertexPositionTexture[] vertices, int tWidth, int tHeight)
+        public Camera(GraphicsDevice device, VertexPositionNormalTexture[] vertices, int tWidth, int tHeight)
         {
             terrainWidth = tWidth;
             terrainHeight = tHeight;
@@ -181,10 +181,9 @@ namespace Tank
         private float SurfaceFollow()
         {
             #region variables
-            float x1 = 0f;
-            float x2 = 0f;
-            float z1 = 0f;
-            float z2 = 0f;
+            // camera coordinates
+            int x = (int)cameraPosition.X; 
+            int z = (int)cameraPosition.Z;
 
             float y1;
             float y2;
@@ -194,37 +193,17 @@ namespace Tank
             Vector3 downRight = Vector3.Zero;
             Vector3 downLeft = Vector3.Zero;
 #endregion
-            // Searchs for the nearby coordinates
-            for (int i = 0; i < terrainWidth; i++)
-            {
-                if (cameraPosition.X >= i && cameraPosition.X <= (i + 1))
-                {
-                    x1 = i;
-                    x2 = (i + 1);
-                    break;
-                }
-            }
-
-            for (int i = 0; i < terrainHeight; i++) 
-            {
-                if (cameraPosition.Z >= i && cameraPosition.Z <= (i + 1))
-                {
-                    z1 = i;
-                    z2 = (i + 1);
-                    break;
-                }
-            }
 
             //Searchs for the vertices on the previous stores coodinates, and then stores it's positon into vectors
-            foreach (VertexPositionTexture item in terrainVertices)
+            foreach (VertexPositionNormalTexture item in terrainVertices)
             {
-                if (item.Position.X == x1 && item.Position.Z == z1)
+                if (item.Position.X == x && item.Position.Z == z)
                     topLeft = item.Position;
-                else if (item.Position.X == x1 && item.Position.Z == z2)
+                else if (item.Position.X == x && item.Position.Z == z + 1)
                     downLeft = item.Position;
-                else if (item.Position.X == x2 && item.Position.Z == z1)
+                else if (item.Position.X == x + 1 && item.Position.Z == z)
                     topRight = item.Position;
-                else if (item.Position.X == x2 && item.Position.Z == z2)
+                else if (item.Position.X == x + 1 && item.Position.Z == z + 1)
                     downRight = item.Position;
             }
 
