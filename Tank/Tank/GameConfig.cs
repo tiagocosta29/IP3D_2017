@@ -20,5 +20,15 @@ namespace Tank
         /// Speed to move the camera
         /// </summary>
         public static float CameraSpeed = 0.5f;
+
+        /// <summary>
+        /// Top speed of the tank
+        /// </summary>
+        public static float TankTopSpeed = 0.5f;
+
+        /// <summary>
+        /// Tank scaling factor
+        /// </summary>
+        public static float TankScalingFactor = 0.005f;
     }
 }

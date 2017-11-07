@@ -180,45 +180,10 @@ namespace Tank
         /// </summary>
         private float SurfaceFollow()
         {
-            #region variables
-            // camera coordinates
             int x = (int)cameraPosition.X; 
             int z = (int)cameraPosition.Z;
 
-            float y1;
-            float y2;
-
-            Vector3 topLeft = Vector3.Zero;
-            Vector3 topRight = Vector3.Zero;
-            Vector3 downRight = Vector3.Zero;
-            Vector3 downLeft = Vector3.Zero;
-#endregion
-
-            //Searchs for the vertices on the previous stores coodinates, and then stores it's positon into vectors
-            foreach (VertexPositionNormalTexture item in terrainVertices)
-            {
-                if (item.Position.X == x && item.Position.Z == z)
-                    topLeft = item.Position;
-                else if (item.Position.X == x && item.Position.Z == z + 1)
-                    downLeft = item.Position;
-                else if (item.Position.X == x + 1 && item.Position.Z == z)
-                    topRight = item.Position;
-                else if (item.Position.X == x + 1 && item.Position.Z == z + 1)
-                    downRight = item.Position;
-            }
-
-            //Console.WriteLine("CAMERA POSITION " + cameraPosition.X + " -- " + cameraPosition.Y + " -- " + cameraPosition.Z + " -- ");
-
-            // This is using bilinear interpolation to calculate the value of the height 
-            // https://en.wikipedia.org/wiki/Bilinear_interpolation
-            y1 = (((cameraPosition.X - topLeft.X) * (topRight.Y - topLeft.Y)) /
-                 (topRight.X - topLeft.X) + topLeft.Y);
-
-            y2 = (((cameraPosition.X - downLeft.X) * (downRight.Y - downLeft.Y)) /
-                  (downRight.X - downLeft.X) + downLeft.Y);
-
-            return (((cameraPosition.Z - topRight.Z) * (y2 - y1)) /
-                    (downRight.Z - topRight.Z) + y1);            
+            return (Helper.SurfaceFollow(x, z, cameraPosition, terrainVertices));
         }
     }
 }
