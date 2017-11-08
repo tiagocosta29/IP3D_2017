@@ -106,7 +106,7 @@ namespace Tank
             effect.DirectionalLight1.Enabled = true;
             effect.DirectionalLight2.Enabled = true;
 
-            effect.FogEnabled = true;
+            effect.FogEnabled = false;
             effect.FogColor = Helper.ColorToVector(Color.Black);
             effect.FogStart = 15f;
             effect.FogEnd = 60f;

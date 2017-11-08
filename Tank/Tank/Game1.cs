@@ -29,6 +29,11 @@ namespace Tank
         /// </summary>
         private Camera camera;
 
+        /// <summary>
+        ///     Tank class - this is temporary, need to work on player script
+        /// </summary>
+        private Tank tank;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -70,6 +75,9 @@ namespace Tank
             terrain = new Terrain(heightMap, texture, GraphicsDevice);
 
             camera = new Camera(GraphicsDevice, terrain.Vertices, terrain.TerrainWidth, terrain.TerrainHeight);
+
+            tank = new Tank(Content, terrain.Vertices);
+
         }
 
         /// <summary>
@@ -107,6 +115,7 @@ namespace Tank
         {
             GraphicsDevice.Clear(Color.Black);
 
+            tank.DrawTank(camera);
             terrain.Draw(GraphicsDevice, camera);
             // TODO: Add your drawing code here
 

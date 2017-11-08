@@ -51,6 +51,11 @@ namespace Tank
         private Matrix worldMatrix;
 
         /// <summary>
+        /// Rotation of the turret
+        /// </summary>
+        private float turretRotationValue = 0f;
+
+        /// <summary>
         /// Tank Constructor
         /// </summary>
         /// <param name="content"></param>
@@ -64,7 +69,7 @@ namespace Tank
 
         public void LoadTankModel(ContentManager content)
         {
-            tankModel = content.Load<Model>("tank");
+            tankModel = content.Load<Model>("RetroTank");
             turretBone = tankModel.Bones["TurretBone"];
             turretTransform = turretBone.Transform;
 
@@ -72,10 +77,28 @@ namespace Tank
             tankInitialDirection = tankModel.Root.Transform.Backward;
         }
 
-        public void DrawTank()
+        public void DrawTank(Camera camera)
         {
-            tankPosition.Y = SurfaceFollow();
+            tankPosition.Y = SurfaceFollow() + 5f;
             tankModel.Root.Transform = Matrix.CreateScale(GameConfig.TankScalingFactor) * worldMatrix;
+
+            //Matrix turretRotation = Matrix.CreateRotationY(turretRotationValue);
+            //turretBone.Transform = turretRotation * turretTransform;
+
+            foreach (ModelMesh mesh in tankModel.Meshes)
+            {
+                foreach (BasicEffect effect in mesh.Effects)
+                {
+                    //effect.World = turretBone.Transform;
+                    effect.World = Matrix.Identity;
+                    effect.TextureEnabled = true;
+                    effect.View = camera.ViewMatrix;
+                    effect.Projection = camera.ProjectionMatrix;
+
+                    effect.EnableDefaultLighting();
+                }
+                mesh.Draw();
+            }
         }
 
         /// <summary>
