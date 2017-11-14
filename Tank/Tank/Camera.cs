@@ -87,6 +87,13 @@ namespace Tank
                     FreeRoamCameraSettings();
                     break;
 
+                case GameCamera.Static:
+                    StaticCameraSettings();
+                    break;
+
+                case GameCamera.Tank3rdPerson:
+                    break;
+
                 default:
                     throw new NotImplementedException(string.Format("Camera {0} not defined", GameConfig.CameraSetting));
             }
@@ -96,7 +103,7 @@ namespace Tank
         ///     Updates the camera
         /// </summary>
         /// <param name="gameTime"></param>
-        public void Update(GameTime gameTime)
+        public void Update(GameTime gameTime, Matrix cameraMatrix)
         {
             var kb = Keyboard.GetState();
 
@@ -104,12 +111,24 @@ namespace Tank
                 GameConfig.CameraSetting = GameCamera.FreeRoam;
             if (kb.IsKeyDown(Keys.F2))
                 GameConfig.CameraSetting = GameCamera.SurfaceFollow;
+            if (kb.IsKeyDown(Keys.F3))
+                GameConfig.CameraSetting = GameCamera.Static;
+            if (kb.IsKeyDown(Keys.F4))
+                GameConfig.CameraSetting = GameCamera.Tank3rdPerson;
 
             switch (GameConfig.CameraSetting)
             {
                 case GameCamera.FreeRoam:
                 case GameCamera.SurfaceFollow:
                     FreeRoamUpdate(gameTime);
+                    break;
+
+                case GameCamera.Static:
+                    StaticCameraSettings();
+                    break;
+
+                case GameCamera.Tank3rdPerson:
+                    ThirdPersonTank(cameraMatrix);
                     break;
 
                 default:
@@ -131,7 +150,35 @@ namespace Tank
         }
 
         /// <summary>
-        ///     Updates the Free Roam Camera
+        ///     Settings to apply to the Static Camera
+        /// </summary>
+        private void StaticCameraSettings()
+        {
+            cameraPosition = new Vector3(95f, 45f, 95f);
+            cameraLookAt = new Vector3(0f, 0f, -1f) - cameraPosition;
+            cameraLookAt.Normalize();
+            ViewMatrix = Matrix.CreateLookAt(cameraPosition, cameraPosition + cameraLookAt, Vector3.Up);
+            ProjectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, graphicsDevice.Viewport.AspectRatio, 1f, 10000f);
+        }
+
+        /// <summary>
+        ///     The 3rd person camera
+        /// </summary>
+        /// <param name="tankMatrix"></param>
+        private void ThirdPersonTank(Matrix tankMatrix)
+        {
+            //Vector3 cameraPosition = tankMatrix.Translation + (tankMatrix.Backward * GameConfig.CameraTrailingDistance);
+            Vector3 cameraPosition = tankMatrix.Translation + (tankMatrix.Backward * GameConfig.CameraTrailingDistance) +
+                                                         (tankMatrix.Right * GameConfig.CameraHorizontalOffset) +
+                                                         (tankMatrix.Up * GameConfig.CameraVerticalOffset);
+
+            Vector3 cameraLookAt = tankMatrix.Translation + (tankMatrix.Forward * GameConfig.CameraLookAheadDistance);
+
+            ViewMatrix = Matrix.CreateLookAt(cameraPosition, cameraLookAt, Vector3.Up);
+        }
+
+        /// <summary>
+        ///     Updates the Free Roam / surface follow Cameras
         /// </summary>
         private void FreeRoamUpdate(GameTime gameTime)
         {

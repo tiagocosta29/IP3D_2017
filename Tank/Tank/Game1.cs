@@ -34,6 +34,11 @@ namespace Tank
         /// </summary>
         private Tank tank;
 
+        /// <summary>
+        ///  Player ckass, instantiates the tank and controlls it
+        /// </summary>
+        private Player player;
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -76,7 +81,8 @@ namespace Tank
 
             camera = new Camera(GraphicsDevice, terrain.Vertices, terrain.TerrainWidth, terrain.TerrainHeight);
 
-            tank = new Tank(Content, terrain.Vertices);
+            //tank = new Tank(Content, terrain.Vertices);
+            player = new Player(Content, terrain.Vertices);
 
         }
 
@@ -100,7 +106,8 @@ namespace Tank
                 Exit();
 
             //Updates the camera
-            camera.Update(gameTime);
+            camera.Update(gameTime, player.PlayerTank.WorldMatrix);
+            player.Update();
 
             // TODO: Add your update logic here
 
@@ -115,7 +122,8 @@ namespace Tank
         {
             GraphicsDevice.Clear(Color.Black);
 
-            tank.DrawTank(camera);
+            //tank.DrawTank(camera);
+            player.Draw(camera);
             terrain.Draw(GraphicsDevice, camera);
             // TODO: Add your drawing code here
 

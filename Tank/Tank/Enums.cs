@@ -13,5 +13,7 @@ namespace Tank
     {
         FreeRoam = 0,
         SurfaceFollow = 1,
+        Static = 2,
+        Tank3rdPerson = 3,
     };
 }

@@ -145,7 +145,7 @@ namespace Tank
                 for (int j = 0; j < TerrainHeight; j++)
                 {
                     Vertices[i + j * TerrainWidth].Position = new Vector3(i, terrainData[i, j], j);
-                    Vertices[i + j * TerrainWidth].Normal = new Vector3(0f, 0f, 0f);
+                    Vertices[i + j * TerrainWidth].Normal = Vector3.Up;
                     Vertices[i + j * TerrainWidth].TextureCoordinate.X = (float)i / 4.0f;
                     Vertices[i + j * TerrainWidth].TextureCoordinate.Y = (float)j / 4.0f;
                 }
@@ -166,8 +166,6 @@ namespace Tank
             indexBuffer = new IndexBuffer(device, typeof(short), verticesIndex.Length, BufferUsage.None);
             indexBuffer.SetData<short>(verticesIndex);
 
-            device.Indices = indexBuffer;
-            device.SetVertexBuffer(vertexBuffer);
         }
 
         /// <summary>
@@ -213,7 +211,10 @@ namespace Tank
         /// </summary>
         /// <param name="device"></param>
         public void Draw(GraphicsDevice device, Camera camera)
-        {
+        {            
+            device.Indices = indexBuffer;
+            device.SetVertexBuffer(vertexBuffer);
+
             effect.View = camera.ViewMatrix;
             effect.Projection = camera.ProjectionMatrix;
 
