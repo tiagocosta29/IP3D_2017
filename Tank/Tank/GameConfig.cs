@@ -44,7 +44,7 @@ namespace Tank
         /// <summary>
         /// Top speed of the tank
         /// </summary>
-        public static float TankTopSpeed = 0.50f;
+        public static float TankTopSpeed = 0.30f;
 
         /// <summary>
         ///     Ammount of acceleration for the tank

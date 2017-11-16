@@ -76,21 +76,27 @@ namespace Tank
         /// </summary>
         private float turretRotationYAmount = 0f;
 
+        private BasicEffect effect;
+
         /// <summary>
         /// Tank Constructor
         /// </summary>
         /// <param name="content"></param>
         /// <param name="vertices"></param>
-        public Tank(ContentManager content, VertexPositionNormalTexture[] vertices)
+        public Tank(GraphicsDevice device, ContentManager content, VertexPositionNormalTexture[] vertices, string tankModelName, Vector3 initialPosition = default(Vector3))
         {
+            effect = new BasicEffect(device);
+
             terrainVertices = vertices;
             WorldMatrix = Matrix.Identity;
-            LoadTankModel(content);
+            tankPosition = initialPosition;
+            LoadTankModel(content, tankModelName);
+
         }
 
-        public void LoadTankModel(ContentManager content)
+        public void LoadTankModel(ContentManager content, string tankModelName)
         {
-            tankModel = content.Load<Model>("RetroTank");
+            tankModel = content.Load<Model>(tankModelName);
             turretBone = tankModel.Bones["Cannon"];
             //turretBone = tankModel.Bones["TurretBone"];            
             turretTransform = turretBone.Transform;
@@ -98,7 +104,6 @@ namespace Tank
 
             tankDirection = Vector3.Zero;
             tankInitialDirection = tankModel.Root.Transform.Backward;
-            tankPosition = new Vector3(50f, 50f, 50f);
         }
 
         public void DrawTank(Camera camera)
@@ -108,7 +113,7 @@ namespace Tank
 
 
 
-            Matrix turretRotationX = Matrix.CreateRotationX(turretRotationXAmount);
+            Matrix turretRotationX = Matrix.CreateRotationZ(turretRotationXAmount);
             //Matrix turretRotationY = Matrix.CreateRotationY(150f);
             turretBone.Transform = turretRotationX * turretTransform;
             //turretBone.Transform = turretRotationY * turretTransform;
@@ -166,7 +171,7 @@ namespace Tank
         /// </summary>
         public void RotateTankRight()
         {
-            steerRotation += 0.02f;
+            steerRotation -= 0.02f;
         }
 
         /// <summary>
@@ -174,7 +179,7 @@ namespace Tank
         /// </summary>
         public void RotateTankLeft()
         {
-            steerRotation -= 0.02f;
+            steerRotation += 0.02f;
         }
 
         /// <summary>
@@ -182,7 +187,7 @@ namespace Tank
         /// </summary>
         public void RotateTurretRight()
         {
-            turretRotationXAmount -= 0.5f;
+            turretRotationXAmount -= 0.1f;
         }
 
         /// <summary>

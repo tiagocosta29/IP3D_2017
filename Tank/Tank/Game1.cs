@@ -30,14 +30,14 @@ namespace Tank
         private Camera camera;
 
         /// <summary>
-        ///     Tank class - this is temporary, need to work on player script
-        /// </summary>
-        private Tank tank;
-
-        /// <summary>
-        ///  Player ckass, instantiates the tank and controlls it
+        ///     Player class, instantiates the tank and controlls it
         /// </summary>
         private Player player;
+
+        /// <summary>
+        ///     Bot class, instatiates the bot tank
+        /// </summary>
+        private Bot bot;
 
         public Game1()
         {
@@ -80,9 +80,9 @@ namespace Tank
             terrain = new Terrain(heightMap, texture, GraphicsDevice);
 
             camera = new Camera(GraphicsDevice, terrain.Vertices, terrain.TerrainWidth, terrain.TerrainHeight);
-
-            //tank = new Tank(Content, terrain.Vertices);
-            player = new Player(Content, terrain.Vertices);
+            
+            player = new Player(graphics.GraphicsDevice, Content, terrain.Vertices);
+            bot = new Bot(GraphicsDevice, Content, terrain.Vertices);
 
         }
 
@@ -108,6 +108,7 @@ namespace Tank
             //Updates the camera
             camera.Update(gameTime, player.PlayerTank.WorldMatrix);
             player.Update();
+            bot.Update();
 
             // TODO: Add your update logic here
 
@@ -121,12 +122,12 @@ namespace Tank
         protected override void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.Black);
-
-            //tank.DrawTank(camera);
-            player.Draw(camera);
+            
             terrain.Draw(GraphicsDevice, camera);
             // TODO: Add your drawing code here
 
+            player.Draw(camera);
+            bot.Draw(camera);
             base.Draw(gameTime);
         }
     }

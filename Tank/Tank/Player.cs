@@ -27,9 +27,9 @@ namespace Tank
         /// </summary>
         /// <param name="content"></param>
         /// <param name="vertices"></param>
-        public Player(ContentManager content, VertexPositionNormalTexture[] vertices)
+        public Player(GraphicsDevice device, ContentManager content, VertexPositionNormalTexture[] vertices)
         {
-            PlayerTank = new Tank(content, vertices);
+            PlayerTank = new Tank(device, content, vertices, "RetroTank", new Vector3(50f, 50f, 50f));
         }
 
         /// <summary>
@@ -44,22 +44,18 @@ namespace Tank
                 curretSpeed = MathHelper.Lerp(curretSpeed, GameConfig.TankTopSpeed, GameConfig.TankAcceleration);
                 PlayerTank.MoveForward(curretSpeed);
             }
-
-            if (kb.IsKeyDown(Keys.H))
+            else if (kb.IsKeyDown(Keys.H))
             {
                 curretSpeed = MathHelper.Lerp(curretSpeed, GameConfig.TankTopSpeed, GameConfig.TankAcceleration);
                 PlayerTank.MoveBackwards(curretSpeed);
             }
 
-            //else
-            //{
-
-            //    MathHelper.Lerp(curretSpeed, -0.2f, GameConfig.TankDeceleration);
-            //    playerTank.MoveForward(curretSpeed);
-            //}
-
             if (kb.IsKeyDown(Keys.G))
                 PlayerTank.RotateTankLeft();
+            else if (kb.IsKeyDown(Keys.J))
+                PlayerTank.RotateTankRight();
+
+
             if (kb.IsKeyDown(Keys.B))
                 PlayerTank.RotateTurretRight();
 
