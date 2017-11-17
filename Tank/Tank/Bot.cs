@@ -32,7 +32,6 @@ namespace Tank
             BotTank = new Tank(device, content, vertices, "Player2", new Vector3(60f, 50f, 60f));
         }
 
-
         /// <summary>
         ///     Updates the bot tank
         /// </summary>
@@ -67,6 +66,5 @@ namespace Tank
         {
             BotTank.DrawTank(camera);
         }
-
     }
 }

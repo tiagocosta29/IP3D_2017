@@ -72,6 +72,5 @@ namespace Tank
         {
             PlayerTank.DrawTank(camera);
         }
-
     }
 }

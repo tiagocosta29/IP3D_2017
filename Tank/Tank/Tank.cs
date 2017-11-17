@@ -105,6 +105,11 @@ namespace Tank
 
         }
 
+        /// <summary>
+        ///     Loads tank
+        /// </summary>
+        /// <param name="content"></param>
+        /// <param name="tankModelName"></param>
         public void LoadTankModel(ContentManager content, string tankModelName)
         {
             tankModel = content.Load<Model>(tankModelName);
@@ -117,6 +122,10 @@ namespace Tank
             tankInitialDirection = tankModel.Root.Transform.Backward;
         }
 
+        /// <summary>
+        ///     Draws the tank
+        /// </summary>
+        /// <param name="camera"></param>
         public void DrawTank(Camera camera)
         {
             tankPosition.Y = SurfaceFollow() + 3f;
@@ -207,6 +216,9 @@ namespace Tank
             turretRotationXAmount += 0.1f;
         }
 
+        /// <summary>
+        ///     Applies the transformations to the tank
+        /// </summary>
         public void ApplyRotation()
         {
             tankRotation = Matrix.CreateRotationY(steerRotation);

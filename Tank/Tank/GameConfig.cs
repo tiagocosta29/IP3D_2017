@@ -60,6 +60,5 @@ namespace Tank
         /// Tank scaling factor
         /// </summary>
         public static float TankScalingFactor = 0.003f;
-
     }
 }
