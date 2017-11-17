@@ -107,13 +107,13 @@ namespace Tank
         {
             var kb = Keyboard.GetState();
 
-            if (kb.IsKeyDown(Keys.F1))
+            if (kb.IsKeyDown(Keys.F3))
                 GameConfig.CameraSetting = GameCamera.FreeRoam;
             if (kb.IsKeyDown(Keys.F2))
                 GameConfig.CameraSetting = GameCamera.SurfaceFollow;
-            if (kb.IsKeyDown(Keys.F3))
-                GameConfig.CameraSetting = GameCamera.Static;
             if (kb.IsKeyDown(Keys.F4))
+                GameConfig.CameraSetting = GameCamera.Static;
+            if (kb.IsKeyDown(Keys.F1))
                 GameConfig.CameraSetting = GameCamera.Tank3rdPerson;
 
             switch (GameConfig.CameraSetting)
@@ -185,29 +185,29 @@ namespace Tank
             // Gets the keyboard state
             var kb = Keyboard.GetState();
 
-            if (kb.IsKeyDown(Keys.Up))
+            if (kb.IsKeyDown(Keys.NumPad8))
                 cameraPosition += cameraLookAt * GameConfig.CameraSpeed;
-            else if (kb.IsKeyDown(Keys.Down))
+            else if (kb.IsKeyDown(Keys.NumPad5))
                 cameraPosition -= cameraLookAt * GameConfig.CameraSpeed;
 
-            if (kb.IsKeyDown(Keys.Right))
+            if (kb.IsKeyDown(Keys.NumPad6))
                 cameraPosition -= Vector3.Cross(Vector3.Up, cameraLookAt) * GameConfig.CameraSpeed; 
-            else if (kb.IsKeyDown(Keys.Left))
+            else if (kb.IsKeyDown(Keys.NumPad4))
                 cameraPosition += Vector3.Cross(Vector3.Up, cameraLookAt) * GameConfig.CameraSpeed;
             
 
-            if (kb.IsKeyDown(Keys.D))
+            if (kb.IsKeyDown(Keys.Decimal))
                 cameraAngleX += (float)gameTime.ElapsedGameTime.TotalSeconds;
-            else if (kb.IsKeyDown(Keys.A))
+            else if (kb.IsKeyDown(Keys.NumPad0))
                 cameraAngleX -= (float)gameTime.ElapsedGameTime.TotalSeconds;
             else
                 cameraAngleX = 0;
 
             if (GameConfig.CameraSetting != GameCamera.SurfaceFollow)
             {
-                if (kb.IsKeyDown(Keys.S))
+                if (kb.IsKeyDown(Keys.NumPad1))
                     cameraAngleY += (float)gameTime.ElapsedGameTime.TotalSeconds;
-                else if (kb.IsKeyDown(Keys.W))
+                else if (kb.IsKeyDown(Keys.NumPad7))
                     cameraAngleY -= (float)gameTime.ElapsedGameTime.TotalSeconds;
                 else
                     cameraAngleY = 0;

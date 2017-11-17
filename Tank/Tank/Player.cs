@@ -39,29 +39,29 @@ namespace Tank
         {
             var kb = Keyboard.GetState();
 
-            if (kb.IsKeyDown(Keys.Y))
+            if (kb.IsKeyDown(Keys.W))
             {
                 curretSpeed = MathHelper.Lerp(curretSpeed, GameConfig.TankTopSpeed, GameConfig.TankAcceleration);
                 PlayerTank.MoveForward(curretSpeed);
             }
-            else if (kb.IsKeyDown(Keys.H))
+            else if (kb.IsKeyDown(Keys.S))
             {
                 curretSpeed = MathHelper.Lerp(curretSpeed, GameConfig.TankTopSpeed, GameConfig.TankAcceleration);
                 PlayerTank.MoveBackwards(curretSpeed);
             }
 
-            if (kb.IsKeyDown(Keys.G))
+            if (kb.IsKeyDown(Keys.A))
                 PlayerTank.RotateTankLeft();
-            else if (kb.IsKeyDown(Keys.J))
+            else if (kb.IsKeyDown(Keys.D))
                 PlayerTank.RotateTankRight();
 
 
-            if (kb.IsKeyDown(Keys.B))
+            if (kb.IsKeyDown(Keys.Right))
                 PlayerTank.RotateTurretRight();
-
+            else if(kb.IsKeyDown(Keys.Left))
+                PlayerTank.RotateTurretLeft();
 
             PlayerTank.ApplyRotation();    
-
         }
 
         /// <summary>

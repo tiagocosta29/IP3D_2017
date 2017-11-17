@@ -37,7 +37,25 @@ namespace Tank
         ///     Updates the bot tank
         /// </summary>
         public void Update()
-        {            
+        {
+            var kb = Keyboard.GetState();
+
+            if (kb.IsKeyDown(Keys.I))
+            {
+                curretSpeed = MathHelper.Lerp(curretSpeed, GameConfig.TankTopSpeed, GameConfig.TankAcceleration);
+                BotTank.MoveForward(curretSpeed);
+            }
+            else if (kb.IsKeyDown(Keys.K))
+            {
+                curretSpeed = MathHelper.Lerp(curretSpeed, GameConfig.TankTopSpeed, GameConfig.TankAcceleration);
+                BotTank.MoveBackwards(curretSpeed);
+            }
+
+            if (kb.IsKeyDown(Keys.J))
+                BotTank.RotateTankLeft();
+            else if (kb.IsKeyDown(Keys.L))
+                BotTank.RotateTankRight();
+            
             BotTank.ApplyRotation();
         }
         

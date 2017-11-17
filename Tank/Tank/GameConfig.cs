@@ -14,7 +14,7 @@ namespace Tank
         /// <summary>
         /// Variable that holds the current camera in use
         /// </summary>
-        public static GameCamera CameraSetting = GameCamera.SurfaceFollow;
+        public static GameCamera CameraSetting = GameCamera.Static;
 
         /// <summary>
         /// Speed to move the camera

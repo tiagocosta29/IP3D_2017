@@ -76,7 +76,15 @@ namespace Tank
         /// </summary>
         private float turretRotationYAmount = 0f;
 
+        /// <summary>
+        ///     The tank effect
+        /// </summary>
         private BasicEffect effect;
+
+        /// <summary>
+        /// The tank texture
+        /// </summary>
+        private Texture2D texture; 
 
         /// <summary>
         /// Tank Constructor
@@ -86,6 +94,9 @@ namespace Tank
         public Tank(GraphicsDevice device, ContentManager content, VertexPositionNormalTexture[] vertices, string tankModelName, Vector3 initialPosition = default(Vector3))
         {
             effect = new BasicEffect(device);
+            texture = content.Load<Texture2D>("BottomTank");
+            effect.TextureEnabled = true;
+            effect.Texture = texture;
 
             terrainVertices = vertices;
             WorldMatrix = Matrix.Identity;
@@ -111,8 +122,6 @@ namespace Tank
             tankPosition.Y = SurfaceFollow() + 3f;
             tankModel.Root.Transform = Matrix.CreateScale(GameConfig.TankScalingFactor) * WorldMatrix;
 
-
-
             Matrix turretRotationX = Matrix.CreateRotationZ(turretRotationXAmount);
             //Matrix turretRotationY = Matrix.CreateRotationY(150f);
             turretBone.Transform = turretRotationX * turretTransform;
@@ -131,7 +140,7 @@ namespace Tank
                     effect.TextureEnabled = false;
                     effect.View = camera.ViewMatrix;
                     effect.Projection = camera.ProjectionMatrix;
-
+                    effect.Texture = texture;
                     effect.EnableDefaultLighting();
                 }
                 mesh.Draw();
