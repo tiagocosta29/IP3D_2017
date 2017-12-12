@@ -11,6 +11,7 @@ namespace Tank
 {
     class Tank
     {
+#region Variables
         /// <summary>
         ///     Placeholder for the tank model
         /// </summary>
@@ -84,7 +85,9 @@ namespace Tank
         /// <summary>
         /// The tank texture
         /// </summary>
-        private Texture2D texture; 
+        private Texture2D texture;
+
+#endregion
 
         /// <summary>
         /// Tank Constructor
@@ -113,8 +116,7 @@ namespace Tank
         public void LoadTankModel(ContentManager content, string tankModelName)
         {
             tankModel = content.Load<Model>(tankModelName);
-            turretBone = tankModel.Bones["Cannon"];
-            //turretBone = tankModel.Bones["TurretBone"];            
+            turretBone = tankModel.Bones["Cannon"];         
             turretTransform = turretBone.Transform;
             tankTransforms = new Matrix[tankModel.Bones.Count];
 
@@ -132,12 +134,7 @@ namespace Tank
             tankModel.Root.Transform = Matrix.CreateScale(GameConfig.TankScalingFactor) * WorldMatrix;
 
             Matrix turretRotationX = Matrix.CreateRotationZ(turretRotationXAmount);
-            //Matrix turretRotationY = Matrix.CreateRotationY(150f);
             turretBone.Transform = turretRotationX * turretTransform;
-            //turretBone.Transform = turretRotationY * turretTransform;
-
-
-            //turretBone.Transform.Rotation = Matrix.CreateRotationY(3f);
             tankModel.CopyAbsoluteBoneTransformsTo(tankTransforms);
 
             foreach (ModelMesh mesh in tankModel.Meshes)
@@ -145,7 +142,6 @@ namespace Tank
                 foreach (BasicEffect effect in mesh.Effects)
                 {
                     effect.World = tankTransforms[mesh.ParentBone.Index];
-                    //effect.World = Matrix.Identity;
                     effect.TextureEnabled = false;
                     effect.View = camera.ViewMatrix;
                     effect.Projection = camera.ProjectionMatrix;
@@ -162,10 +158,7 @@ namespace Tank
         /// <returns></returns>
         private float SurfaceFollow()
         {
-            int x = (int)tankModel.Root.Transform.Translation.X;
-            int z = (int)tankModel.Root.Transform.Translation.Z;
-
-            return (Helper.SurfaceFollow(x, z, tankModel.Root.Transform.Translation, terrainVertices));
+            return (Helper.SurfaceFollow(tankModel.Root.Transform.Translation, terrainVertices));
         }
 
         /// <summary>
@@ -235,7 +228,7 @@ namespace Tank
         }
 
         /// <summary>
-        ///     Adjusts the tank to the terrain
+        ///     Adjusts the tank to the terrain, still a little choppy, needs to be improved
         /// </summary>
         public Vector3 NormaisTankFollow()
         {

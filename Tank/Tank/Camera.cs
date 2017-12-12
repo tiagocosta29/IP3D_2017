@@ -167,7 +167,6 @@ namespace Tank
         /// <param name="tankMatrix"></param>
         private void ThirdPersonTank(Matrix tankMatrix)
         {
-            //Vector3 cameraPosition = tankMatrix.Translation + (tankMatrix.Backward * GameConfig.CameraTrailingDistance);
             Vector3 cameraPosition = tankMatrix.Translation + (tankMatrix.Backward * GameConfig.CameraTrailingDistance) +
                                                          (tankMatrix.Right * GameConfig.CameraHorizontalOffset) +
                                                          (tankMatrix.Up * GameConfig.CameraVerticalOffset);
@@ -227,10 +226,7 @@ namespace Tank
         /// </summary>
         private float SurfaceFollow()
         {
-            int x = (int)cameraPosition.X; 
-            int z = (int)cameraPosition.Z;
-
-            return (Helper.SurfaceFollow(x, z, cameraPosition, terrainVertices));
+            return (Helper.SurfaceFollow(cameraPosition, terrainVertices));
         }
     }
 }

@@ -43,10 +43,12 @@ namespace Tank
         /// <param name="currentPosition"></param>
         /// <param name="vertices"></param>
         /// <returns></returns>
-        public static float SurfaceFollow(int x, int z, Vector3 currentPosition, VertexPositionNormalTexture[] vertices)
+        public static float SurfaceFollow(Vector3 currentPosition, VertexPositionNormalTexture[] vertices)
         {
             float y1;
             float y2;
+            int x = (int)currentPosition.X;
+            int z = (int)currentPosition.Z;
 
             Vector3 topLeft = Vector3.Zero;
             Vector3 topRight = Vector3.Zero;
@@ -65,8 +67,6 @@ namespace Tank
                 else if (item.Position.X == x + 1 && item.Position.Z == z + 1)
                     downRight = item.Position;
             }
-
-            //Console.WriteLine("CAMERA POSITION " + cameraPosition.X + " -- " + cameraPosition.Y + " -- " + cameraPosition.Z + " -- ");
 
             // This is using bilinear interpolation to calculate the value of the height 
             // https://en.wikipedia.org/wiki/Bilinear_interpolation
