@@ -11,6 +11,16 @@ namespace Tank
     public static class Helper
     {
         /// <summary>
+        ///     Stores the map Width
+        /// </summary>
+        public static int MapWidth = 0;
+
+        /// <summary>
+        ///     Stores the map Height
+        /// </summary>
+        public static int MapHeight = 0;
+
+        /// <summary>
         /// Converts color to vector3
         /// </summary>
         /// <param name="color"></param>
@@ -78,6 +88,51 @@ namespace Tank
 
             return (((currentPosition.Z - topRight.Z) * (y2 - y1)) /
                     (downRight.Z - topRight.Z) + y1);
+        }
+
+        /// <summary>
+        ///     Adjusts the tank to the terrain, still a little choppy, needs to be improved
+        /// </summary>
+        public static Vector3 NormalFollow(float posX, float posZ, VertexPositionNormalTexture[] terrainVertices)
+        {
+            float x = (int)posX;
+            float z = (int)posZ;
+
+            VertexPositionNormalTexture topLeft = new VertexPositionNormalTexture();
+            VertexPositionNormalTexture topRight = new VertexPositionNormalTexture();
+            VertexPositionNormalTexture downRight = new VertexPositionNormalTexture();
+            VertexPositionNormalTexture downLeft = new VertexPositionNormalTexture();
+            Vector3 result;
+
+            //Searchs for the vertices on the previous stores coodinates, and then stores it's positon into vectors
+            foreach (VertexPositionNormalTexture item in terrainVertices)
+            {
+                if (item.Position.X == x && item.Position.Z == z)
+                    topLeft = item;
+                else if (item.Position.X == x && item.Position.Z == z + 1)
+                    downLeft = item;
+                else if (item.Position.X == x + 1 && item.Position.Z == z)
+                    topRight = item;
+                else if (item.Position.X == x + 1 && item.Position.Z == z + 1)
+                    downRight = item;
+            }
+
+            Vector3 y1;
+            Vector3 y2;
+
+            // This is using bilinear interpolation to calculate the value of the normal 
+            // https://en.wikipedia.org/wiki/Bilinear_interpolation
+            y1 = (((x - topLeft.Position.X) * (topRight.Normal - topLeft.Normal)) /
+                 (topRight.Position.X - topLeft.Position.X) + topLeft.Normal);
+
+            y2 = (((x - downLeft.Position.X) * (downRight.Normal - downLeft.Normal)) /
+                  (downRight.Position.X - downLeft.Position.X) + downLeft.Normal);
+
+            result = (((z - topRight.Position.Z) * (y2 - y1)) /
+                    (downRight.Position.Z - topRight.Position.Z) + y1);
+
+            result.Normalize();
+            return result;
         }
     }
 }

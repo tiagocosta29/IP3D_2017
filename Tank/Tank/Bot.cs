@@ -35,14 +35,14 @@ namespace Tank
         /// <summary>
         ///     Updates the bot tank
         /// </summary>
-        public void Update()
+        public void Update(GameTime gameTime)
         {
             var kb = Keyboard.GetState();
 
             if (kb.IsKeyDown(Keys.I))
             {
                 curretSpeed = MathHelper.Lerp(curretSpeed, GameConfig.TankTopSpeed, GameConfig.TankAcceleration);
-                BotTank.MoveForward(curretSpeed);
+                BotTank.MoveForward(curretSpeed, gameTime);
             }
             else if (kb.IsKeyDown(Keys.K))
             {

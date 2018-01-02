@@ -79,10 +79,12 @@ namespace Tank
 
             terrain = new Terrain(heightMap, texture, GraphicsDevice);
 
-            camera = new Camera(GraphicsDevice, terrain.Vertices, terrain.TerrainWidth, terrain.TerrainHeight);
+            camera = new Camera(GraphicsDevice, terrain.Vertices);
             
             player = new Player(graphics.GraphicsDevice, Content, terrain.Vertices);
             bot = new Bot(GraphicsDevice, Content, terrain.Vertices);
+
+            player.BotEnemy = bot;
 
         }
 
@@ -107,8 +109,8 @@ namespace Tank
 
             //Updates the camera
             camera.Update(gameTime, player.PlayerTank.WorldMatrix);
-            player.Update();
-            bot.Update();
+            player.Update(gameTime);
+            bot.Update(gameTime);
 
             // TODO: Add your update logic here
 

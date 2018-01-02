@@ -24,12 +24,12 @@ namespace Tank
         /// <summary>
         ///     The widht of the terrain texture
         /// </summary>
-        public int TerrainWidth;
+        private int terrainWidth;
 
         /// <summary>
         ///     The height of the terrain texture
         /// </summary>
-        public int TerrainHeight;
+        private int terrainHeight;
 
         /// <summary>
         ///     Stores the Terrain data from texture
@@ -74,18 +74,21 @@ namespace Tank
 
             //Checks if the terrain has the right size, if not reduces it to get even values
             if (heightMap.Width % 2 == 0)
-                TerrainWidth = heightMap.Width;
+                terrainWidth = heightMap.Width;
             else
-                TerrainWidth = heightMap.Width - 1;
+                terrainWidth = heightMap.Width - 1;
 
             if (heightMap.Height % 2 == 0)
-                TerrainHeight = heightMap.Height;
+                terrainHeight = heightMap.Height;
             else
-                TerrainHeight = heightMap.Height - 1;
+                terrainHeight = heightMap.Height - 1;
 
             GetTerrainData();
             GetVertices(device);
             TerrainEffect(device);
+
+            Helper.MapHeight = terrainHeight;
+            Helper.MapWidth =  terrainWidth;
         }
 
         /// <summary>
@@ -119,15 +122,15 @@ namespace Tank
         /// </summary>
         private void GetTerrainData()
         {
-            Color[] greyScale = new Color[TerrainWidth * TerrainHeight];
+            Color[] greyScale = new Color[terrainWidth * terrainHeight];
             heightMap.GetData(greyScale);
 
-            terrainData = new float[TerrainWidth, TerrainHeight];
-            for (int i = 0; i < TerrainWidth; i++)
+            terrainData = new float[terrainWidth, terrainHeight];
+            for (int i = 0; i < terrainWidth; i++)
             {
-                for (int j = 0; j < TerrainHeight; j++)
+                for (int j = 0; j < terrainHeight; j++)
                 {
-                    terrainData[i, j] = greyScale[i + j * TerrainWidth].R / 15.0f;
+                    terrainData[i, j] = greyScale[i + j * terrainWidth].R / 15.0f;
                 }
             }
         }
@@ -137,17 +140,17 @@ namespace Tank
         /// </summary>
         private void GetVertices(GraphicsDevice device)
         {
-            Vertices = new VertexPositionNormalTexture[TerrainWidth * TerrainHeight];
-            verticesIndex = new short[(TerrainWidth * TerrainHeight) * 2];
+            Vertices = new VertexPositionNormalTexture[terrainWidth * terrainHeight];
+            verticesIndex = new short[(terrainWidth * terrainHeight) * 2];
 
-            for (int i = 0; i < TerrainWidth; i++)
+            for (int i = 0; i < terrainWidth; i++)
             {
-                for (int j = 0; j < TerrainHeight; j++)
+                for (int j = 0; j < terrainHeight; j++)
                 {
-                    Vertices[i + j * TerrainWidth].Position = new Vector3(i, terrainData[i, j], j);
-                    Vertices[i + j * TerrainWidth].Normal = Vector3.Up;
-                    Vertices[i + j * TerrainWidth].TextureCoordinate.X = (float)i / 4.0f;
-                    Vertices[i + j * TerrainWidth].TextureCoordinate.Y = (float)j / 4.0f;
+                    Vertices[i + j * terrainWidth].Position = new Vector3(i, terrainData[i, j], j);
+                    Vertices[i + j * terrainWidth].Normal = Vector3.Up;
+                    Vertices[i + j * terrainWidth].TextureCoordinate.X = (float)i / 4.0f;
+                    Vertices[i + j * terrainWidth].TextureCoordinate.Y = (float)j / 4.0f;
                 }
             }
 
@@ -155,7 +158,7 @@ namespace Tank
             for (int i = 0; i < verticesIndex.Length; i += 2)
             {
                 verticesIndex[i] = (short)(i / 2);
-                verticesIndex[i + 1] = (short)((i / 2) + TerrainHeight);
+                verticesIndex[i + 1] = (short)((i / 2) + terrainHeight);
             }
 
             GetNormals();
@@ -224,9 +227,9 @@ namespace Tank
             rs.CullMode = CullMode.None;
             device.RasterizerState = rs;
             
-            for (int i = 0; i < (TerrainWidth * (TerrainHeight - 1) * 2); i += (TerrainWidth * 2))
+            for (int i = 0; i < (terrainWidth * (terrainHeight - 1) * 2); i += (terrainWidth * 2))
             {
-                device.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, (TerrainWidth * 2), i, (TerrainWidth * 2) - 2);
+                device.DrawIndexedPrimitives(PrimitiveType.TriangleStrip, 0, 0, (terrainWidth * 2), i, (terrainWidth * 2) - 2);
             }
         }
 

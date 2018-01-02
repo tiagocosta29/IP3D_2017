@@ -23,6 +23,11 @@ namespace Tank
         private float curretSpeed = 0;
 
         /// <summary>
+        ///     Reference to the Bot
+        /// </summary>
+        public Bot BotEnemy;
+
+        /// <summary>
         ///     Player constructor
         /// </summary>
         /// <param name="content"></param>
@@ -35,19 +40,24 @@ namespace Tank
         /// <summary>
         ///     Updates the player controlls
         /// </summary>
-        public void Update()
+        public void Update(GameTime gameTime)
         {
             var kb = Keyboard.GetState();
 
             if (kb.IsKeyDown(Keys.W))
             {
                 curretSpeed = MathHelper.Lerp(curretSpeed, GameConfig.TankTopSpeed, GameConfig.TankAcceleration);
-                PlayerTank.MoveForward(curretSpeed);
+                PlayerTank.MoveForward(curretSpeed, gameTime);
+                PlayerTank.IsMoving = true;
             }
             else if (kb.IsKeyDown(Keys.S))
             {
                 curretSpeed = MathHelper.Lerp(curretSpeed, GameConfig.TankTopSpeed, GameConfig.TankAcceleration);
                 PlayerTank.MoveBackwards(curretSpeed);
+            }
+            else
+            {
+                PlayerTank.IsMoving = false;
             }
 
             if (kb.IsKeyDown(Keys.A))
@@ -61,7 +71,18 @@ namespace Tank
             else if(kb.IsKeyDown(Keys.Left))
                 PlayerTank.RotateTurretLeft();
 
-            PlayerTank.ApplyRotation();    
+            if (kb.IsKeyDown(Keys.Space))
+            {
+                Console.WriteLine("FIRE!!!");
+                PlayerTank.Fire();
+            }
+
+            PlayerTank.ApplyRotation();
+
+            PlayerTank.TankDetailUpdate(gameTime);
+
+            if (BotEnemy != null)
+                PlayerTank.Colision(BotEnemy.BotTank.TankPosition);
         }
 
         /// <summary>

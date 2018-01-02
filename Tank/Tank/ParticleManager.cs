@@ -40,6 +40,9 @@ namespace Tank
         /// </summary>
         private GraphicsDevice device;
 
+        private Vector3 newDir;
+        private Vector3 newPos;
+
         /// <summary>
         /// The ParticleManager Constructor
         /// </summary>
@@ -49,7 +52,10 @@ namespace Tank
             effect = new BasicEffect(device);
             tankPlaceholder = tank;
             vertices = terrainVertices;
-            dustParticles = new Particle[1000];
+            dustParticles = new Particle[5000];
+            DustParticlesInit();
+
+            dustParticlesVertices = new VertexPositionColor[dustParticles.Length * 2];
         }
 
         /// <summary>
@@ -58,10 +64,21 @@ namespace Tank
         private void DustParticlesInit()
         {
             Vector3 vectorZero = Vector3.Zero;
+            Random randomValue = new Random();
 
+            var position = tankPlaceholder.WorldMatrix.Translation;
             for (int i = 0; i < dustParticles.Length; i++)
             {
-                dustParticles[i] = new Particle(vectorZero, vectorZero);
+                newDir = new Vector3(((float)randomValue.NextDouble() * 0.05f),
+                                                                 ((float)randomValue.NextDouble() * 0.1f),
+                                                                 ((float)randomValue.NextDouble() * 0.05f));
+
+                dustParticles[i] = new Particle(position, newDir, vectorZero);
+
+                dustParticles[i].ParticlePosition = new Vector3(position.X, Helper.SurfaceFollow(position, vertices), position.Z);
+                dustParticles[i].ParticleDirection = new Vector3(((float)randomValue.NextDouble() * 0.05f),
+                                                                 ((float)randomValue.NextDouble() * 0.1f),
+                                                                 ((float)randomValue.NextDouble() * 0.05f));
             }
         }
 
@@ -70,32 +87,32 @@ namespace Tank
         /// </summary>
         /// <param name="gameTime"></param>
         /// <param name="position"></param>
-        public void UpdateDust(GameTime gameTime, Vector3 position)
+        public void UpdateDust(GameTime gameTime)
         {
             Random randomValue = new Random();
-
+            int j = 0;
+            var position = tankPlaceholder.WorldMatrix.Translation;
             for (int i = 0; i < dustParticles.Length; i++)
             {
-                // This uses the surface follow to spawn the dust particles at the tank bottom
-                if (dustParticles[i].LifeTime == 0f)
+                newPos = new Vector3(position.X, position.Y, position.Z - 3f);
+                newDir = new Vector3(((float)randomValue.NextDouble() * 0.05f),
+                                                                 ((float)randomValue.NextDouble() * 0.1f),
+                                                                 ((float)randomValue.NextDouble() * 0.05f));
+
+                if (tankPlaceholder.IsMoving)
                 {
-                    dustParticles[i].ParticlePosition = new Vector3(position.X, Helper.SurfaceFollow(position, vertices), position.Z);
-                    dustParticles[i].ParticleDirection = new Vector3(((float)randomValue.NextDouble() * 0.05f), 
-                                                                     ((float)randomValue.NextDouble() * 0.1f),
-                                                                     ((float)randomValue.NextDouble() * 0.05f));
-                } else
-                {
-                    dustParticles[i].UpdateParticle(gameTime);
+                    dustParticles[i].UpdateParticle(gameTime, newPos, newDir);
                 }
+                else
+                {
+                    dustParticles[i].ResetParticle(newPos, newDir);
+                }
+
+                dustParticlesVertices[j] = new VertexPositionColor(dustParticles[i].ParticlePosition, Color.BlueViolet);
+                dustParticlesVertices[j + 1] = new VertexPositionColor(dustParticles[i].ParticlePosition + new Vector3(0.01f, 0.0f, 0.01f), Color.Blue);
+                j += 2;
             }
 
-            dustParticlesVertices = new VertexPositionColor[dustParticles.Length * 2];
-
-            for (int i = 0; i < dustParticles.Length; i++)
-            {
-                dustParticlesVertices[i * 2] = new VertexPositionColor(dustParticles[i].ParticlePosition, Color.GreenYellow);
-                dustParticlesVertices[i * 2 + 1] = new VertexPositionColor(dustParticles[i].ParticlePosition + new Vector3(0.01f, 0.0f, 0.01f), Color.Green);
-            }
         }
 
         /// <summary>
@@ -103,13 +120,16 @@ namespace Tank
         /// </summary>
         public void DrawDust(Camera camera)
         {
-            effect.World = Matrix.Identity;
-            effect.View = camera.ViewMatrix;
-            effect.Projection = camera.ProjectionMatrix;
+            if (dustParticlesVertices != null)
+            {
+                effect.World = Matrix.Identity;
+                effect.View = camera.ViewMatrix;
+                effect.Projection = camera.ProjectionMatrix;
 
-            effect.CurrentTechnique.Passes[0].Apply();
-            
-            device.DrawUserPrimitives(PrimitiveType.LineList, dustParticlesVertices, 0, dustParticles.Length);
+                effect.CurrentTechnique.Passes[0].Apply();
+
+                device.DrawUserPrimitives(PrimitiveType.LineList, dustParticlesVertices, 0, dustParticles.Length);
+            }
         }
     }
 }

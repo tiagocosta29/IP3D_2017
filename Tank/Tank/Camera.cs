@@ -65,10 +65,10 @@ namespace Tank
         ///     Camera Constructor
         /// </summary>
         /// <param name="device"></param>
-        public Camera(GraphicsDevice device, VertexPositionNormalTexture[] vertices, int tWidth, int tHeight)
+        public Camera(GraphicsDevice device, VertexPositionNormalTexture[] vertices)
         {
-            terrainWidth = tWidth;
-            terrainHeight = tHeight;
+            terrainWidth = Helper.MapWidth;
+            terrainHeight = Helper.MapHeight;
 
             terrainVertices = vertices;
             graphicsDevice = device;

@@ -30,7 +30,7 @@ namespace Tank
         /// <summary>
         ///     Tank position
         /// </summary>
-        private Vector3 tankPosition;
+        public Vector3 TankPosition;
 
         /// <summary>
         ///     Tank Direction
@@ -83,11 +83,45 @@ namespace Tank
         private BasicEffect effect;
 
         /// <summary>
-        /// The tank texture
+        ///     The tank texture
         /// </summary>
         private Texture2D texture;
 
-#endregion
+        /// <summary>
+        ///     The Particle Manager of the tank
+        /// </summary>
+        private ParticleManager particleManager;
+
+        /// <summary>
+        ///     Graphics device placeholder
+        /// </summary>
+        private GraphicsDevice gDevice;
+
+        /// <summary>
+        ///     The bullet class
+        /// </summary>
+        private Bullet bullet;
+
+        /// <summary>
+        ///     Content Manager Reference
+        /// </summary>
+        private ContentManager contentManager;
+
+        /// <summary>
+        ///     Stores the initial position of the tank
+        /// </summary>
+        private Vector3 tankInitialPosition;
+
+        /// <summary>
+        ///     flag to check if tank is moving
+        /// </summary>
+        public bool IsMoving;
+
+        private Vector3 tankFront;
+        private Vector3 tankRight;
+        private Vector3 tankNormal;
+
+        #endregion
 
         /// <summary>
         /// Tank Constructor
@@ -96,6 +130,8 @@ namespace Tank
         /// <param name="vertices"></param>
         public Tank(GraphicsDevice device, ContentManager content, VertexPositionNormalTexture[] vertices, string tankModelName, Vector3 initialPosition = default(Vector3))
         {
+            contentManager = content;
+            gDevice = device;
             effect = new BasicEffect(device);
             texture = content.Load<Texture2D>("BottomTank");
             effect.TextureEnabled = true;
@@ -103,9 +139,11 @@ namespace Tank
 
             terrainVertices = vertices;
             WorldMatrix = Matrix.Identity;
-            tankPosition = initialPosition;
+            TankPosition = initialPosition;
+            tankInitialPosition = initialPosition;
             LoadTankModel(content, tankModelName);
 
+            particleManager = new ParticleManager(this, terrainVertices, device);
         }
 
         /// <summary>
@@ -130,7 +168,7 @@ namespace Tank
         /// <param name="camera"></param>
         public void DrawTank(Camera camera)
         {
-            tankPosition.Y = SurfaceFollow() + 3f;
+            TankPosition.Y = SurfaceFollow() + 3f;
             tankModel.Root.Transform = Matrix.CreateScale(GameConfig.TankScalingFactor) * WorldMatrix;
 
             Matrix turretRotationX = Matrix.CreateRotationZ(turretRotationXAmount);
@@ -150,6 +188,16 @@ namespace Tank
                 }
                 mesh.Draw();
             }
+
+            if(bullet != null)
+            {
+                bullet.Draw(gDevice, camera);
+            }
+
+            //if (IsMoving)
+            //{
+                particleManager.DrawDust(camera);
+            //}
         }
 
         /// <summary>
@@ -164,9 +212,11 @@ namespace Tank
         /// <summary>
         /// Moves the tank forward
         /// </summary>
-        public void MoveForward(float currentSpeed)
+        public void MoveForward(float currentSpeed, GameTime gameTime)
         {
-            tankPosition = tankPosition + tankDirection * currentSpeed;
+            TankPosition = TankPosition + tankDirection * currentSpeed;
+
+            //particleManager.UpdateDust(gameTime);
         }
 
         /// <summary>
@@ -174,7 +224,8 @@ namespace Tank
         /// </summary>
         public void MoveBackwards(float currentSpeed)
         {
-            tankPosition = tankPosition - tankDirection * currentSpeed;
+            TankPosition = TankPosition - tankDirection * currentSpeed;
+
         }
 
         /// <summary>
@@ -191,6 +242,19 @@ namespace Tank
         public void RotateTankLeft()
         {
             steerRotation += 0.02f;
+        }
+
+        /// <summary>
+        ///  Fires a bullet
+        /// </summary>
+        public void Fire()
+        {            
+            if (bullet == null)
+            {
+                Vector3 bulletDir = Vector3.Transform(tankFront, Matrix.CreateFromAxisAngle(tankRight, 0f) * Matrix.CreateFromAxisAngle(tankNormal, -turretRotationXAmount));
+                bulletDir.Normalize();
+                bullet = new Bullet(gDevice, contentManager, tankModel.Root.Transform.Translation, 0f, bulletDir, terrainVertices, this);
+            }
         }
 
         /// <summary>
@@ -217,47 +281,66 @@ namespace Tank
             tankRotation = Matrix.CreateRotationY(steerRotation);
             tankDirection = Vector3.Transform(tankInitialDirection, tankRotation);
 
-            tankRotation.Up = NormaisTankFollow();
+            tankRotation.Up = Helper.NormalFollow(tankModel.Root.Transform.Translation.X,
+                                                  tankModel.Root.Transform.Translation.Z,
+                                                  terrainVertices );
 
-            tankRotation.Right = Vector3.Cross(tankRotation.Forward, NormaisTankFollow());
+            tankRotation.Right = Vector3.Cross(tankRotation.Forward, 
+                                               Helper.NormalFollow(tankModel.Root.Transform.Translation.X,
+                                                                   tankModel.Root.Transform.Translation.Z,
+                                                                   terrainVertices));
+
             tankRotation.Right = Vector3.Normalize(tankRotation.Right);
-            tankRotation.Forward = Vector3.Cross(NormaisTankFollow(), tankRotation.Right);
+            tankRotation.Forward = Vector3.Cross(Helper.NormalFollow(tankModel.Root.Transform.Translation.X,
+                                                                   tankModel.Root.Transform.Translation.Z,
+                                                                   terrainVertices), 
+                                                 tankRotation.Right);            
+
             tankRotation.Forward = Vector3.Normalize(tankRotation.Forward);
 
-            WorldMatrix = tankRotation * Matrix.CreateTranslation(tankPosition);
+            WorldMatrix = tankRotation * Matrix.CreateTranslation(TankPosition);
+
+            tankFront = tankRotation.Forward;
+            tankRight = tankRotation.Right;
+            tankNormal = tankRotation.Up;         
+        }       
+
+        /// <summary>
+        ///     Updates tank details
+        /// </summary>
+        public void TankDetailUpdate(GameTime gametime)
+        {
+            if (bullet != null)
+            {
+                bullet.Update(gametime);
+
+                if (!bullet.IsALive)
+                {
+                    bullet = null;
+                }
+            }
+
+            if (TankPosition.X <= 0 || TankPosition.X >= Helper.MapHeight - 2 ||
+                TankPosition.Z <= 0 || TankPosition.Z >= Helper.MapWidth - 2 )
+            {
+                TankPosition = tankInitialPosition;
+            }
+
+            particleManager.UpdateDust(gametime);
         }
 
         /// <summary>
-        ///     Adjusts the tank to the terrain, still a little choppy, needs to be improved
+        ///     Detects colision between tanks
         /// </summary>
-        public Vector3 NormaisTankFollow()
+        /// <param name="enemyPosition"></param>
+        /// <returns></returns>
+        public void Colision(Vector3 enemyPosition)
         {
-           float x = (int)WorldMatrix.Translation.X;
-           float z = (int)WorldMatrix.Translation.Z;
+            BoundingSphere tankColision = new BoundingSphere(TankPosition, 2.5f);
+            BoundingSphere enemyColision = new BoundingSphere(enemyPosition, 2.5f);
 
-            Vector3 topLeft = Vector3.Zero;
-            Vector3 topRight = Vector3.Zero;
-            Vector3 downRight = Vector3.Zero;
-            Vector3 downLeft = Vector3.Zero;
-            Vector3 result = Vector3.Zero;
-
-            //Searchs for the vertices on the previous stores coodinates, and then stores it's positon into vectors
-            foreach (VertexPositionNormalTexture item in terrainVertices)
-            {
-                if (item.Position.X == x && item.Position.Z == z)
-                    topLeft = item.Normal;
-                else if (item.Position.X == x && item.Position.Z == z + 1)
-                    downLeft = item.Normal;
-                else if (item.Position.X == x + 1 && item.Position.Z == z)
-                    topRight = item.Normal;
-                else if (item.Position.X == x + 1 && item.Position.Z == z + 1)
-                    downRight = item.Normal;
-            }
-
-            result = (topLeft + downLeft + topRight + downRight) / 4;
-            result.Normalize();
-
-            return result;
+            if (tankColision.Intersects(enemyColision))
+                TankPosition = tankInitialPosition;
         }
     }
 }

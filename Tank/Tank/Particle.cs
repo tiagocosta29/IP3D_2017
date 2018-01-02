@@ -38,35 +38,47 @@ namespace Tank
         ///     Particle life time counter
         /// </summary>
         public float LifeTime { get; set; }
+
+        private float maxLifeTime;
         
         /// <summary>
         ///      Particle initializer
         /// </summary>
         /// <param name="position"></param>
         /// <param name="speed"></param>
-        public Particle(Vector3 position, Vector3 speed)
+        public Particle(Vector3 position, Vector3 direction, Vector3 speed)
         {
             initialParticlePosition = position;
             initialParticleSpeed = speed;
 
             ParticlePosition = position;
+            ParticleDirection = direction;
             ParticleSpeed = speed;
+
+            maxLifeTime = (float)new Random().NextDouble();
+            LifeTime = 0f; 
         }
 
         /// <summary>
         ///     Resets the particle state
         /// </summary>
-        public void ResetParticle()
+        public void ResetParticle(Vector3 newPos, Vector3 newDir)
         {
-            ParticlePosition = initialParticlePosition;
-            ParticleSpeed = initialParticleSpeed;
+            ParticlePosition = newPos;
+            ParticleDirection = newDir;
+            //ParticleSpeed = initialParticleSpeed;
             LifeTime = 0f;
         }
 
-        public void UpdateParticle(GameTime gametime)
+        public void UpdateParticle(GameTime gametime, Vector3 newPos, Vector3 newDir)
         {
-            LifeTime = (float)gametime.ElapsedGameTime.TotalSeconds;
+            LifeTime += (float)gametime.ElapsedGameTime.TotalSeconds;
             ParticlePosition += ParticleDirection * new Vector3(LifeTime);
+
+            if (LifeTime > maxLifeTime)
+            {
+                ResetParticle(newPos, newDir);
+            }
         }
     }
 }
